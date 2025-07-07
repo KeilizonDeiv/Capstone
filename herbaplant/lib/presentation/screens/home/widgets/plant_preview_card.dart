@@ -6,7 +6,7 @@ class PlantPreviewCard extends StatelessWidget {
   final String tagline;
   final VoidCallback onTap;
 
-  const PlantPreviewCard({
+  const PlantPreviewCard({super.key, 
     required this.name,
     required this.imagePath,
     required this.tagline,

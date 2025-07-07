@@ -10,6 +10,8 @@ class ProfileScreen extends StatelessWidget {
     'joined': 'June 2023',
   };
 
+  ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

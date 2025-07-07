@@ -7,6 +7,8 @@ import '../plant_info/plant_info_screen.dart';
 import 'scan_loading_screen.dart';
 
 class ScanScreen extends StatefulWidget {
+  const ScanScreen({super.key});
+
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }

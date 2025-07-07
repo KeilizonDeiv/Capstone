@@ -18,6 +18,8 @@ class PromptHistoryScreen extends StatelessWidget {
     },
   ];
 
+  PromptHistoryScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

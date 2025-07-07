@@ -6,7 +6,7 @@ class ScanLoadingScreen extends StatefulWidget {
   final File imageFile;
   final VoidCallback onScanComplete;
 
-  const ScanLoadingScreen({
+  const ScanLoadingScreen({super.key, 
     required this.imageFile,
     required this.onScanComplete,
   });

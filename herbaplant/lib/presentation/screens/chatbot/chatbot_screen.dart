@@ -3,6 +3,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 
 class ChatbotScreen extends StatefulWidget {
+  const ChatbotScreen({super.key});
+
   @override
   State<ChatbotScreen> createState() => _ChatbotScreenState();
 }
