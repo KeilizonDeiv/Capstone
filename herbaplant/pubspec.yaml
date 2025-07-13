@@ -39,6 +39,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  image_picker: ^1.1.2
+  collection: ^1.15.0
+  logger: ^2.5.0
+  tutorial_coach_mark: ^1.2.12
+  flutter_launcher_icons: ^0.14.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -53,6 +58,16 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+      - assets/image/Logo.png
+      - assets/image/bgplant.jpg 
+      - assets/image/logo_icon.png
+      - assets/image/logonobg.png
+      - assets/animations/
+      - assets/image/circle-new.png
+      - assets/image/logo-new.png
+      - assets/image/intro_chat.png
+      - assets/animations/typing.gif
+      - assets/image/
     # - assets/profile/avatar.jpg
 
   # The following line ensures that the Material Icons font is
