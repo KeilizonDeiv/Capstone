@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,22 +18,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _lottieController = AnimationController(vsync: this);
 
-    Future.delayed(const Duration(seconds: 2), _navigateToNextScreen);
-  }
-
-  Future<void> _navigateToNextScreen() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString("token");
-    final bool isFirstLogin = prefs.getBool("first_login") ?? true;
-
-    if (token != null && isFirstLogin) {
-      await prefs.setBool("first_login", false);
-      if (mounted) context.go('/onboarding');
-    } else if (token != null) {
-      if (mounted) context.go('/home');
-    } else {
-      if (mounted) context.go('/login');
-    }
+    // Navigate to LoginScreen after delay
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) context.go('/login'); // ⬅️ Navigate to login screen only
+    });
   }
 
   @override
@@ -64,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             ),
           ),
 
-          // Logo centered
+          // Centered logo
           Center(
             child: Image.asset(
               'assets/image/logonobg.png',

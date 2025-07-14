@@ -5,12 +5,12 @@ import '../presentation/screens/splash/splash_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
 import '../presentation/screens/onboarding/onboarding_screen.dart';
-import '../presentation/screens/home/home_screen.dart';
+import '../presentation/screens/main/main_navigation.dart';
 
-
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
+  navigatorKey: navigatorKey, // ✅ Important for global access
   initialLocation: '/',
   routes: [
     GoRoute(
@@ -19,19 +19,19 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => LoginScreen(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => RegisterScreen(),
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const MainNavigation(),
     ),
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => HomeScreen(),
     ),
   ],
 );
