@@ -14,12 +14,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _sendResetLink() async {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
-
-      // 🔁 CALL YOUR API SERVICE HERE
-      // Example:
-      // final response = await ApiService.sendPasswordReset(email);
-      // Handle result with SnackBar, navigation, etc.
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("📧 Password reset link sent to $email"),

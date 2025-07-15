@@ -92,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.green.shade700,
         elevation: 0,
         centerTitle: false,
+        automaticallyImplyLeading: false,
         title: Text(
           "Hi, $userName",
           style: const TextStyle(
@@ -312,4 +313,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
+} 

@@ -78,8 +78,6 @@ flutter:
       - assets/image/logo-new.png
       - assets/image/intro_chat.png
       - assets/animations/typing.gif
-      - assets/image/
-    # - assets/profile/avatar.jpg
       - assets/image/Logo.png
       - assets/image/bgplant.jpg 
       - assets/image/logo_icon.png

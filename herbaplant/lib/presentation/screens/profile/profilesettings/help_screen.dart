@@ -10,7 +10,7 @@ class HelpScreen extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/profile'), // GoRouter-compatible back button
+          onPressed: () => context.push('/profile'), // GoRouter-compatible back button
         ),
         title: const Text('Help & Support'),
         backgroundColor: Colors.green.shade700,

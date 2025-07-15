@@ -14,7 +14,7 @@ class PromptHistoryScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            context.go('/profile'); // ✅ Navigate back to the profile screen
+            context.push('/profile'); // ✅ Navigate back to the profile screen
           },
         ),
         title: const Text(
