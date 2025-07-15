@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:herbaplant/presentation/screens/home/widgets/notification_service.dart';
-
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,23 +13,14 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _lottieController;
-
+class _HomeScreenState extends State<HomeScreen> {
   String userName = "User";
   List<dynamic> trendingNews = [];
 
   @override
   void initState() {
     super.initState();
-    _lottieController = AnimationController(vsync: this);
-    _lottieController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _lottieController.stop();
-      }
-    });
-
-    _loadUserFromStorage(); // ✅ use local user fallback
+    _loadUserFromStorage();
     _fetchTrendingNews();
     _sendNotificationOnce();
   }
@@ -43,11 +33,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _fetchTrendingNews() async {
-    // Dummy structure or mock since ApiService is removed
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
-    // Replace with your own logic or static JSON if no API
     final url = Uri.parse("http://192.168.100.203:5000/trending-news");
     final response = await http.get(
       url,
@@ -59,7 +47,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     if (response.statusCode == 200) {
       final List<dynamic> news = jsonDecode(response.body);
-      if (news.isNotEmpty && (trendingNews.isEmpty || news.first["title"] != trendingNews.first["title"])) {
+      if (news.isNotEmpty &&
+          (trendingNews.isEmpty ||
+              news.first["title"] != trendingNews.first["title"])) {
         NotificationService.showNotification(
           "New Trending News!",
           news.first["title"],
@@ -79,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     bool hasNotified = prefs.getBool('has_notified') ?? false;
 
     if (!hasNotified) {
-      await NotificationService.showNotification("Welcome!", "You have entered Home User.");
+      await NotificationService.showNotification(
+          "Welcome!", "You have entered Home User.");
       await prefs.setBool('has_notified', true);
     }
   }
@@ -94,12 +85,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   @override
-  void dispose() {
-    _lottieController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -109,195 +94,220 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         centerTitle: false,
         title: Text(
           "Hi, $userName",
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: Lottie.asset(
-                'assets/animations/growplant.json',
-                controller: _lottieController,
-                onLoaded: (composition) {
-                  _lottieController
-                    ..duration = composition.duration
-                    ..forward();
-                },
-                fit: BoxFit.cover,
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.person, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'What\'s New?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  'What\'s New?',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            SizedBox(
-              height: 250,
-              child: trendingNews.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: trendingNews.length > 3 ? 3 : trendingNews.length,
-                      itemBuilder: (context, index) {
-                        final article = trendingNews[index];
-                        return GestureDetector(
-                          onTap: () => _openNewsArticle(article["url"]),
-                          child: Container(
-                            width: 250,
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.network(
-                                      article["image"] ?? "https://via.placeholder.com/250",
-                                      width: 250,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    (loadingProgress.expectedTotalBytes ?? 1)
-                                                : null,
-                                          ),
-                                        );
-                                      },
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          width: 250,
-                                          height: 150,
-                                          color: Colors.grey[300],
-                                          child: const Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.broken_image, color: Colors.red, size: 40),
-                                                SizedBox(height: 5),
-                                                Text(
-                                                  "Image failed to load",
-                                                  style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
-                                                ),
-                                              ],
+              SizedBox(
+                height: 250,
+                child: trendingNews.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: trendingNews.length > 3
+                            ? 3
+                            : trendingNews.length,
+                        itemBuilder: (context, index) {
+                          final article = trendingNews[index];
+                          return GestureDetector(
+                            onTap: () => _openNewsArticle(article["url"]),
+                            child: Container(
+                              width: 250,
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        article["image"] ??
+                                            "https://via.placeholder.com/250",
+                                        width: 250,
+                                        height: 150,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      (loadingProgress
+                                                          .expectedTotalBytes ??
+                                                      1)
+                                                  : null,
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            width: 250,
+                                            height: 150,
+                                            color: Colors.grey[300],
+                                            child: const Center(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.broken_image,
+                                                      color: Colors.red,
+                                                      size: 40),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    "Image failed to load",
+                                                    style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  article["title"] ?? "No Title",
-                                  style: const TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 5),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Text(
-                                    article["description"] ?? "No description available",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.black, fontSize: 12),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    article["title"] ?? "No Title",
+                                    style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Get Started',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(
-              height: 250,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.all(16.0),
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  List<String> descriptions = [
-                    'Learn how to take a clear photo for identification.',
-                    'Understand how to analyze the results effectively.',
-                    'Discover additional information about herbs.',
-                    'Save your identification history for future reference.',
-                    'Explore expert tips on herbal plant usage.',
-                  ];
-                  return GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 250,
-                      margin: const EdgeInsets.only(right: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                'assets/image/Getstart${index + 1}.png',
-                                width: 250,
-                                fit: BoxFit.cover,
+                                  const SizedBox(height: 5),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      article["description"] ??
+                                          "No description available",
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: Colors.black, fontSize: 12),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Step ${index + 1}',
-                            style: const TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 5),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              descriptions[index],
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.black, fontSize: 12),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
               ),
-            ),
-          ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  'Get Started',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                height: 250,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    List<String> descriptions = [
+                      'Learn how to take a clear photo for identification.',
+                      'Understand how to analyze the results effectively.',
+                      'Discover additional information about herbs.',
+                      'Save your identification history for future reference.',
+                      'Explore expert tips on herbal plant usage.',
+                    ];
+                    return GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: 250,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.asset(
+                                  'assets/image/Getstart${index + 1}.png',
+                                  width: 250,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Step ${index + 1}',
+                              style: const TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                descriptions[index],
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 12),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
