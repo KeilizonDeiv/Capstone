@@ -80,18 +80,17 @@ flutter:
       - assets/animations/typing.gif
       - assets/image/
     # - assets/profile/avatar.jpg
-    - assets/image/Logo.png
+      - assets/image/Logo.png
       - assets/image/bgplant.jpg 
       - assets/image/logo_icon.png
       - assets/image/logonobg.png
       - assets/animations/
-      - assets/models/model_unquant.tflite
-      - assets/models/labels.txt
       - assets/image/circle-new.png
       - assets/image/logo-new.png
       - assets/image/intro_chat.png
       - assets/animations/typing.gif
       - assets/image/
+      - assets/image/sample_profile.jpg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
