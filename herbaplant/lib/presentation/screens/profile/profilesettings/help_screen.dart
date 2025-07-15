@@ -8,6 +8,10 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/profile'), // GoRouter-compatible back button
+        ),
         title: const Text('Help & Support'),
         backgroundColor: Colors.green.shade700,
       ),
@@ -21,15 +25,30 @@ class HelpScreen extends StatelessWidget {
           const SizedBox(height: 10),
           ExpansionTile(
             title: const Text('How do I identify a plant?'),
-            children: [Padding(padding: const EdgeInsets.all(8.0), child: Text("Tap the 'Identify' button and take a clear photo."))],
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Tap the 'Identify' button and take a clear photo."),
+              ),
+            ],
           ),
           ExpansionTile(
             title: const Text('How do I save my plant history?'),
-            children: [Padding(padding: const EdgeInsets.all(8.0), child: Text("Your history is saved automatically after identification."))],
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Your history is saved automatically after identification."),
+              ),
+            ],
           ),
           ExpansionTile(
             title: const Text('Can I get info about non-herbal plants?'),
-            children: [Padding(padding: const EdgeInsets.all(8.0), child: Text("This app focuses on herbal plants only."))],
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("This app focuses on herbal plants only."),
+              ),
+            ],
           ),
           const Divider(height: 40),
           const Text(

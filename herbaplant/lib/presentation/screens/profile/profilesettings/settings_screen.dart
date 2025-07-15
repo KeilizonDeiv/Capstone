@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -7,8 +8,17 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
         backgroundColor: Colors.green.shade700,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/profile'), // ✅ Use context.push to navigate back
+ // Use go_router's pop
+        ),
+        title: const Text(
+          'Settings',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
       ),
       body: ListView(
         children: [
@@ -22,18 +32,18 @@ class SettingsScreen extends StatelessWidget {
             leading: const Icon(Icons.dark_mode),
             title: const Text('Dark Mode'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {}, // Add dark mode logic
           ),
           ListTile(
             leading: const Icon(Icons.language),
             title: const Text('Language'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {}, // Add language selection
           ),
           ListTile(
             leading: const Icon(Icons.privacy_tip),
             title: const Text('Privacy Policy'),
-            onTap: () {},
+            onTap: () {}, // Add privacy navigation
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // Only needed if you're using GoRouter
 
 class AboutHerbaPlantScreen extends StatelessWidget {
   const AboutHerbaPlantScreen({super.key});
@@ -7,6 +8,10 @@ class AboutHerbaPlantScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/profile'),// use Navigator.pop(context) if you're not using GoRouter
+        ),
         title: const Text('About HerbaPlant'),
         backgroundColor: Colors.green.shade700,
       ),

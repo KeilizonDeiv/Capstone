@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PromptHistoryScreen extends StatelessWidget {
   const PromptHistoryScreen({super.key});
@@ -7,10 +8,22 @@ class PromptHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Prompt History"),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        centerTitle: true, // ✅ Center the title
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            context.go('/profile'); // ✅ Navigate back to the profile screen
+          },
+        ),
+        title: const Text(
+          "Prompt History",
+          style: TextStyle(color: Colors.black),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.edit, color: Colors.black),
             onPressed: () {
               // Handle edit action
             },

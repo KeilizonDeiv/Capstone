@@ -11,7 +11,9 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [];
+  bool _isTyping = false;
 
   void _sendMessage() {
     final text = _controller.text.trim();
@@ -19,23 +21,34 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     setState(() {
       _messages.add({'role': 'user', 'text': text});
+      _isTyping = true;
     });
 
     _controller.clear();
 
-    // Simulate bot response
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _messages.add({
           'role': 'bot',
           'text': _generateBotResponse(text),
         });
+        _isTyping = false;
+      });
+
+      // Auto-scroll to bottom after response
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       });
     });
   }
 
   String _generateBotResponse(String userMessage) {
-    // Replace this with real NLP or API call
     if (userMessage.toLowerCase().contains("oregano")) {
       return "Oregano is used for cough, inflammation, and digestion support.";
     } else {
@@ -50,7 +63,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: isUser ? AppColors.primary : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
@@ -70,41 +85,48 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Ask HerbaBot')),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildMessage(message['role']!, message['text']!);
-              },
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 80),
+                itemCount: _messages.length + (_isTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (_isTyping && index == _messages.length) {
+                    return _buildMessage('bot', "Typing...");
+                  }
+                  final message = _messages[index];
+                  return _buildMessage(message['role']!, message['text']!);
+                },
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: "Type your question...",
-                      border: InputBorder.none,
+            const Divider(height: 1),
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: "Type your question...",
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: AppColors.primary),
-                  onPressed: _sendMessage,
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.send, color: AppColors.primary),
+                    onPressed: _sendMessage,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

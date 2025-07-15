@@ -25,7 +25,6 @@ class _ScanScreenState extends State<ScanScreen> {
         _image = File(pickedFile.path);
       });
 
-      // Show loading screen then navigate
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -47,26 +46,28 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Scan Plant')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/scan_placeholder.png', height: 180),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt),
-                label: const Text("Take Photo"),
-                onPressed: () => _pickImage(ImageSource.camera),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.photo_library),
-                label: const Text("Choose from Gallery"),
-                onPressed: () => _pickImage(ImageSource.gallery),
-              ),
-            ],
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/scan_placeholder.png', height: 180),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text("Take Photo"),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text("Choose from Gallery"),
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                ),
+              ],
+            ),
           ),
         ),
       ),
