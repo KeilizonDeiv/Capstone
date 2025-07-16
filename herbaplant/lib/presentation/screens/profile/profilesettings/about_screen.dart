@@ -10,7 +10,7 @@ class AboutHerbaPlantScreen extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/profile'),// use Navigator.pop(context) if you're not using GoRouter
+          onPressed: () => context.push('/profile'),// use Navigator.pop(context) if you're not using GoRouter
         ),
         title: const Text('About HerbaPlant'),
         backgroundColor: Colors.green.shade700,

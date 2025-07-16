@@ -11,7 +11,7 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: Colors.green.shade700,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.go('/profile'), // ✅ Use context.push to navigate back
+          onPressed: () => context.push('/profile'), // ✅ Use context.push to navigate back
  // Use go_router's pop
         ),
         title: const Text(

@@ -13,7 +13,7 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.go('/home'), // Use GoRouter's go method for navigation
+          onPressed: () => context.push('/home'), // Use GoRouter's go method for navigation
  // Use go instead of push
         ),
       ),
