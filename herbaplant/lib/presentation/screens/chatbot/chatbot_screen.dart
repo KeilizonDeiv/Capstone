@@ -1,6 +1,8 @@
+// lib/presentation/screens/chatbot/chatbot_screen.dart
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import 'speech_to_text.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -14,6 +16,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [];
   bool _isTyping = false;
+  bool _showMic = true;
+
+  final SpeechService _speechService = SpeechService();
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    await _speechService.initSpeech();
+  }
 
   void _sendMessage() {
     final text = _controller.text.trim();
@@ -22,6 +37,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     setState(() {
       _messages.add({'role': 'user', 'text': text});
       _isTyping = true;
+      _showMic = true;
     });
 
     _controller.clear();
@@ -35,7 +51,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         _isTyping = false;
       });
 
-      // Auto-scroll to bottom after response
       Future.delayed(const Duration(milliseconds: 100), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -84,10 +99,26 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ask HerbaBot')),
       body: SafeArea(
         child: Column(
           children: [
+            // Custom AppBar
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              child: Column(
+                children: const [
+                  Text(
+                    'HerbaBot',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  Divider(thickness: 1, height: 20),
+                ],
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -115,13 +146,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         hintText: "Type your question...",
                         border: InputBorder.none,
                       ),
+                      onChanged: (value) {
+                        setState(() => _showMic = value.trim().isEmpty);
+                      },
                       onSubmitted: (_) => _sendMessage(),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: AppColors.primary),
-                    onPressed: _sendMessage,
-                  ),
+                  _showMic
+                      ? IconButton(
+                          icon: const Icon(Icons.mic, color: AppColors.primary),
+                          onPressed: () {
+                            _speechService.startListening((text) {
+                              setState(() {
+                                _controller.text = text;
+                                _showMic = false;
+                              });
+                            });
+                          },
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.send, color: AppColors.primary),
+                          onPressed: _sendMessage,
+                        ),
                 ],
               ),
             ),
