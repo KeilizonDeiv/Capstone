@@ -32,8 +32,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
       // 🟢 Floating Scan Button (Styled)
       floatingActionButton: Container(
-        height: 64,
-        width: 64,
+        height: 50,
+        width: 50,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           boxShadow: [
