@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../scan/scan_screen.dart';
-import '../chatbot/chatbot_screen.dart';
+import '../history/history_screen.dart'; // ✅ History screen
 import '../../../core/constants/app_colors.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -17,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const ScanScreen(),
-    const ChatbotScreen(),
+    const HistoryScreen(), // ✅ History screen
   ];
 
   void _onItemTapped(int index) {
@@ -30,7 +30,6 @@ class _MainNavigationState extends State<MainNavigation> {
       extendBody: true,
       body: _screens[_selectedIndex],
 
-      // 🟢 Floating Scan Button (Styled)
       floatingActionButton: Container(
         height: 50,
         width: 50,
@@ -46,14 +45,13 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
         child: FloatingActionButton(
           backgroundColor: AppColors.primary,
-          onPressed: () => _onItemTapped(1),
+          onPressed: () => _onItemTapped(1), // ScanScreen index
           shape: const CircleBorder(),
           child: const Icon(Icons.center_focus_strong, size: 30),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // 🔘 Bottom Navigation Bar
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(0),
@@ -84,14 +82,12 @@ class _MainNavigationState extends State<MainNavigation> {
                   ),
                 ),
 
-                const SizedBox(width: 40), // Space for FAB
-
-                // Chatbot
+                // History
                 SizedBox(
                   height: 30,
                   child: IconButton(
                     icon: Icon(
-                      Icons.chat_bubble_outline,
+                      Icons.history,
                       size: 24,
                       color: _selectedIndex == 2
                           ? AppColors.primary

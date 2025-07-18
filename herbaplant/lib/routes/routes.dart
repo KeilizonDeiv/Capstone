@@ -12,6 +12,7 @@ import '../presentation/screens/history/prompt_history_screen.dart';
 import '../presentation/screens/profile/profilesettings/about_screen.dart';
 import '../presentation/screens/profile/profilesettings/settings_screen.dart';
 import '../presentation/screens/profile/profilesettings/help_screen.dart';
+import '../presentation/screens/history/history_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,6 +31,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/history',
+      builder: (context, state) => const HistoryScreen(),
     ),
     GoRoute(
       path: '/home',
