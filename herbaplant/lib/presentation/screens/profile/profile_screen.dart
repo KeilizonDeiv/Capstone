@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:herbaplant/core/constants/app_colors.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -9,7 +10,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green.shade800,
+        backgroundColor: AppColors.maingreen,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -23,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.only(top: 20, bottom: 20),
             width: double.infinity,
-            color: Colors.green.shade800,
+            color: AppColors.maingreen,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -120,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
           color: Colors.green.shade100,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: Colors.green),
+        child: Icon(icon, color: AppColors.maingreen),
       ),
       title: Text(label),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),

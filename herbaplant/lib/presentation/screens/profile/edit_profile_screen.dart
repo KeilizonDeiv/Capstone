@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // IMPORTANT: make sure this is imported
+import 'package:go_router/go_router.dart';
+import 'package:herbaplant/core/constants/app_colors.dart';
+import 'package:herbaplant/presentation/widgets/custom_text_form_field.dart';
+import 'package:herbaplant/presentation/widgets/success_dialog.dart';
+import '../../widgets/confirmation_dialog.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -9,6 +13,7 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
@@ -26,167 +31,180 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () =>  context.go('/profile'),// <-- GoRouter-compatible back
+          onPressed: () => context.go('/profile'),
         ),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text('Edit Profile', style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
 
-            /// Profile Image
-            Center(
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  const CircleAvatar(
-                    radius: 60,
-                    backgroundImage: AssetImage('assets/image/sample_profile.jpg'),
+                      /// Profile Image
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            const CircleAvatar(
+                              radius: 60,
+                              backgroundImage: AssetImage('assets/image/sample_profile.jpg'),
+                            ),
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: AppColors.maingreen,
+                              child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      /// Email
+                      CustomTextFormField(
+                        controller: emailController,
+                        label: 'Email Address',
+                        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.maingreen),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Email is required' : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      /// Old Password
+                      CustomTextFormField(
+                        controller: oldPasswordController,
+                        label: 'Old Password',
+                        obscureText: obscureOldPassword,
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureOldPassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() => obscureOldPassword = !obscureOldPassword);
+                          },
+                        ),
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Old password is required' : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      /// New Password
+                      CustomTextFormField(
+                        controller: newPasswordController,
+                        label: 'New Password',
+                        obscureText: obscureNewPassword,
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() => obscureNewPassword = !obscureNewPassword);
+                          },
+                        ),
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'New password is required' : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      /// Confirm Password
+                      CustomTextFormField(
+                        controller: confirmPasswordController,
+                        label: 'Confirm Password',
+                        obscureText: obscureConfirmPassword,
+                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() => obscureConfirmPassword = !obscureConfirmPassword);
+                          },
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Confirm password is required';
+                          }
+                          if (value != newPasswordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                    ],
                   ),
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.green,
-                    child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+
+            /// Bottom Buttons
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => context.pop(),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.maingreen),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Cancel', style: TextStyle(color: AppColors.maingreen)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => ConfirmationDialog(
+                              title: "Save Changes?",
+                              message: "Are you sure you want to save your updated account info?",
+                              onConfirm: () {
+                                Navigator.of(ctx).pop(); // Close confirmation dialog
+                                Future.delayed(const Duration(milliseconds: 200), () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => SuccessDialog(
+                                      title: "Success",
+                                      message: "Account successfully updated",
+                                      onConfirm: () => Navigator.of(context).pop(),
+                                    ),
+                                  );
+                                });
+                              },
+                              onCancel: () => Navigator.of(ctx).pop(),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text("Save"),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 30),
-
-            /// Email Field
-            _buildLabel('Email'),
-            _buildTextField(
-              controller: emailController,
-              icon: Icons.email_outlined,
-              hintText: 'Email address',
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Old Password Field
-            _buildLabel('Old Password'),
-            _buildPasswordField(
-              controller: oldPasswordController,
-              obscureText: obscureOldPassword,
-              toggleVisibility: () => setState(() => obscureOldPassword = !obscureOldPassword),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// New Password Field
-            _buildLabel('New Password'),
-            _buildPasswordField(
-              controller: newPasswordController,
-              obscureText: obscureNewPassword,
-              toggleVisibility: () => setState(() => obscureNewPassword = !obscureNewPassword),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Confirm Password Field
-            _buildLabel('Confirm Password'),
-            _buildPasswordField(
-              controller: confirmPasswordController,
-              obscureText: obscureConfirmPassword,
-              toggleVisibility: () => setState(() => obscureConfirmPassword = !obscureConfirmPassword),
-            ),
-
-            const SizedBox(height: 30),
-
-            /// Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.pop(), // <-- Cancel goes back
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.green),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.green)),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Add save logic here
-                      // For example: show success and go back
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Changes saved')),
-                      );
-                      context.pop(); // or navigate somewhere else
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Save'),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Label Text Widget
-  Widget _buildLabel(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  /// Reusable TextField
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required IconData icon,
-    required String hintText,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.green),
-        hintText: hintText,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-  }
-
-  /// Reusable Password Field
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required bool obscureText,
-    required VoidCallback toggleVisibility,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.lock_outline, color: Colors.green),
-        suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: toggleVisibility,
-        ),
-        hintText: 'Password',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
