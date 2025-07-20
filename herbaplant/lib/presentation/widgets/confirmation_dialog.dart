@@ -17,15 +17,15 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      title: Text(title),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       content: Text(message),
       actions: [
         TextButton(
           onPressed: onCancel,
           child: const Text("Cancel"),
         ),
-        ElevatedButton(
+        TextButton(
           onPressed: onConfirm,
           child: const Text("Confirm"),
         ),

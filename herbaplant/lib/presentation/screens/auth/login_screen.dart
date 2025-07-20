@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:herbaplant/presentation/screens/auth/register_screen.dart';
+import '../../widgets/custom_text_form_field.dart';
+import 'package:herbaplant/core/constants/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.green, width: 2),
+        borderSide: const BorderSide(color: AppColors.maingreen),
       ),
       counterText: "",
     );
@@ -79,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 16, 114, 19),
+                          color: AppColors.maingreen,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -92,50 +94,48 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
 
                   // Email
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    maxLength: 50,
-                    decoration: _inputDecoration(
-                      'Email',
-                      const Icon(Icons.person, color: Colors.green),
+                  CustomTextFormField(
+                      controller: _emailController,
+                      label: 'Email',
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.person, color: AppColors.maingreen),
+                      maxLength: 50,
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null ||
-                          value.isEmpty ||
-                          !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
+
                   const SizedBox(height: 12),
 
                   // Password
-                  TextFormField(
+                  CustomTextFormField(
                     controller: _passwordController,
+                    label: 'Password',
                     obscureText: _obscurePassword,
                     maxLength: 20,
-                    decoration: _inputDecoration(
-                      'Password',
-                      const Icon(Icons.lock, color: Colors.green),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
-                      ),
-                    ),
+                    prefixIcon: const Icon(Icons.lock, color: AppColors.maingreen),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
                       }
                       return null;
                     },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                      ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
                   ),
+
                   const SizedBox(height: 12),
 
                   // Forgot password
@@ -150,11 +150,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       child: Text(
                         'Forgot Password?',
-                        style: TextStyle(color: Colors.green.shade700),
+                        style: TextStyle(color: AppColors.maingreen),
                       ),
                     ),
                   ),
-
+                  
+                  const SizedBox(height: 12),
                   // Login Button
                   ElevatedButton(
                     onPressed: _handleLogin,
