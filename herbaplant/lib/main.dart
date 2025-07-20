@@ -13,6 +13,7 @@ class HerbaPlantApp extends StatelessWidget {
     return MaterialApp.router(
       routerConfig: router, // ✅ Use the router from app_router.dart
       debugShowCheckedModeBanner: false,
+      
       theme: ThemeData(
         primarySwatch: Colors.green,
         fontFamily: 'Poppins',
