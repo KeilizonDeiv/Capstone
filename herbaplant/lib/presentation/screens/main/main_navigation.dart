@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../scan/scan_screen.dart';
 import '../history/history_screen.dart'; // ✅ History screen
-import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_colors.dart' as core_colors;
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -44,7 +44,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ],
         ),
         child: FloatingActionButton(
-          backgroundColor: AppColors.primary,
+          backgroundColor: core_colors.AppColors.primary,
           onPressed: () => _onItemTapped(1), // ScanScreen index
           shape: const CircleBorder(),
           child: const Icon(Icons.center_focus_strong, size: 30),
@@ -75,7 +75,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       Icons.home_outlined,
                       size: 30,
                       color: _selectedIndex == 0
-                          ? AppColors.primary
+                          ? core_colors.AppColors.primary
                           : Colors.grey,
                     ),
                     onPressed: () => _onItemTapped(0),
@@ -90,7 +90,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       Icons.history,
                       size: 24,
                       color: _selectedIndex == 2
-                          ? AppColors.primary
+                          ? core_colors.AppColors.primary
                           : Colors.grey,
                     ),
                     onPressed: () => _onItemTapped(2),
