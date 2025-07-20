@@ -30,6 +30,9 @@
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera to scan plants.</string>
+
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
