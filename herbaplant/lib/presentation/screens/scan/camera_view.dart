@@ -58,7 +58,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> _takePictureAndNavigate() async {
-  if (!(_controller?.value.isInitialized ?? false)) return;
+  if (!(_controller?.value.isInitialized ?? false) || _controller!.value.isTakingPicture) return;
 
     try {
       await _controller!.setFocusMode(FocusMode.auto);
@@ -67,16 +67,21 @@ class _CameraViewState extends State<CameraView> {
       final XFile xfile = await _controller!.takePicture();
       final File imageFile = File(xfile.path);
 
-      // Wait briefly to ensure the file system has completed the write
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Add retry logic if image isn't immediately available
+      bool isValid = false;
+      int retryCount = 0;
+      while (retryCount < 5) {
+        isValid = await imageFile.exists() && (await imageFile.length()) > 0;
+        if (isValid) break;
+        await Future.delayed(const Duration(milliseconds: 100));
+        retryCount++;
+      }
 
-      final bool exists = await imageFile.exists();
-      final int size = exists ? await imageFile.length() : 0;
-
-      if (!exists || size == 0) {
-        debugPrint("❌ Image capture failed: ${xfile.path}, size: $size");
+      if (!isValid) {
+        debugPrint("❌ Image capture failed: ${xfile.path}, size: ${await imageFile.length()}");
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to capture image. Please try again.")),
+          const SnackBar(content: Text("Captured image is not valid. Please try again.")),
         );
         return;
       }
@@ -94,12 +99,14 @@ class _CameraViewState extends State<CameraView> {
         ),
       );
     } catch (e) {
-      debugPrint("Camera error: $e");
+      debugPrint("📷 Camera error: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Camera error: $e")),
       );
     }
   }
+
 
   Future<void> _pickFromGallery() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);

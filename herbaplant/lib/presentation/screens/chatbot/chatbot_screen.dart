@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../widgets/chat_widget.dart'; // Import your chat bubbles
+import '../../widgets/chat_widget.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final File? imageFile;
@@ -18,45 +18,60 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   bool _isTyping = false;
 
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
+    _handleInitialImage();
+  }
 
-  if (widget.imageFile != null) {
-    final file = widget.imageFile!;
-    file.exists().then((exists) async {
-      final valid = exists && (await file.length()) > 0;
-      if (!valid) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invalid image file.")),
-        );
-        return;
-      }
+  Future<void> _handleInitialImage() async {
+    final file = widget.imageFile;
+    if (file != null) {
+      final exists = await file.exists();
+      final length = await file.length();
+      final isValid = exists && length > 0;
 
-      setState(() {
-        _messages.add({
-          'role': 'user',
-          'imagePath': file.path,
+      if (isValid) {
+        // Display user image
+        setState(() {
+          _messages.add({
+            'role': 'user',
+            'imagePath': file.path,
+          });
+          _isTyping = true;
         });
 
-        _isTyping = true;
+        await Future.delayed(const Duration(seconds: 2));
 
-        Future.delayed(const Duration(seconds: 2), () {
-          setState(() {
-            _messages.add({
-              'role': 'bot',
-              'text': _getBotInfoFromImage(file),
-            });
-            _isTyping = false;
+        // Simulated bot response for valid image
+        setState(() {
+          _messages.add({
+            'role': 'bot',
+            'text': _getBotInfoFromImage(file),
+          });
+          _isTyping = false;
+        });
+      } else {
+        // Image invalid — notify user and show bot's error response
+        setState(() {
+          _messages.add({
+            'role': 'user',
+            'text': '[Image could not be loaded]',
+          });
+          _messages.add({
+            'role': 'bot',
+            'text': 'Sorry, I couldn’t identify the image you provided.',
           });
         });
-      });
-    });
-  }
-}
 
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid or unreadable image.")),
+        );
+      }
+    }
+  }
 
   String _getBotInfoFromImage(File image) {
-    // Simulate analysis — replace this with real model/API call
+    // Simulate analysis — in future, replace with ML/API logic
     return "This appears to be a sample herbal plant. Here's some basic information...";
   }
 
@@ -81,27 +96,28 @@ void initState() {
   }
 
   Widget _buildMessage(Map<String, String> message) {
-  final timestamp = TimeOfDay.now().format(context);
+    final timestamp = TimeOfDay.now().format(context);
 
-  if (message.containsKey('imagePath')) {
-    return ImageMessageBubble(
-      imagePath: message['imagePath']!,
-      isUser: message['role'] == 'user',
-    );
-  } else if (message['role'] == 'user') {
-    return UserMessageBubble(text: message['text']!, time: timestamp);
-  } else {
-    return BotMessageBubble(text: message['text']!, time: timestamp);
+    if (message.containsKey('imagePath')) {
+      return ImageMessageBubble(
+        imagePath: message['imagePath']!,
+        isUser: message['role'] == 'user',
+      );
+    } else if (message['role'] == 'user') {
+      return UserMessageBubble(text: message['text']!, time: timestamp);
+    } else {
+      return BotMessageBubble(text: message['text']!, time: timestamp);
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Chatbot'),
+        title: const Text('Herbabot'),
         backgroundColor: AppColors.primary,
+        centerTitle: true,
         elevation: 0,
       ),
       body: Column(
