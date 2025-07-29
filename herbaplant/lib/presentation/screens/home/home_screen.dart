@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
-
+import '../../../core/constants/app_colors.dart';
 import 'widgets/get_started_steps.dart'; // ✅ Import the Get Started Steps widget
 import '../profile/profile_screen.dart';
 import 'widgets/notification_service.dart';
@@ -89,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundwh,
       appBar: AppBar(
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: AppColors.maingreen,
         elevation: 0,
         centerTitle: false,
         automaticallyImplyLeading: false,
@@ -118,6 +118,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ✅ Moved "Get Started" above
+              const GetStartedSteps(),
+
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Text(
@@ -132,9 +135,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     : ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.all(16.0),
-                        itemCount: trendingNews.length > 3
-                            ? 3
-                            : trendingNews.length,
+                        itemCount:
+                            trendingNews.length > 3 ? 3 : trendingNews.length,
                         itemBuilder: (context, index) {
                           final article = trendingNews[index];
                           return GestureDetector(
@@ -170,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   ? loadingProgress
                                                           .cumulativeBytesLoaded /
                                                       (loadingProgress
-                                                          .expectedTotalBytes ??
+                                                              .expectedTotalBytes ??
                                                           1)
                                                   : null,
                                             ),
@@ -239,9 +241,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
               ),
-
-              // ✅ Use the separated widget here
-              const GetStartedSteps(),
             ],
           ),
         ),

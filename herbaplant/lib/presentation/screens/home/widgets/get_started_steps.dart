@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:herbaplant/core/constants/app_colors.dart';
 
 class GetStartedSteps extends StatelessWidget {
   const GetStartedSteps({super.key});
@@ -36,7 +37,7 @@ class GetStartedSteps extends StatelessWidget {
                   width: 250,
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
+                    color: AppColors.maingreen,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
@@ -56,7 +57,7 @@ class GetStartedSteps extends StatelessWidget {
                       Text(
                         'Step ${index + 1}',
                         style: const TextStyle(
-                            color: Colors.green,
+                            color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 16,
                             fontWeight: FontWeight.bold),
                       ),
@@ -67,7 +68,7 @@ class GetStartedSteps extends StatelessWidget {
                           descriptions[index],
                           textAlign: TextAlign.center,
                           style:
-                              const TextStyle(color: Colors.black, fontSize: 12),
+                              const TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontSize: 12),
                         ),
                       ),
                       const SizedBox(height: 10),

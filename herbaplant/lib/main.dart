@@ -10,6 +10,7 @@ class HerbaPlantApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
     return MaterialApp.router(
       routerConfig: router, // ✅ Use the router from app_router.dart
       debugShowCheckedModeBanner: false,
