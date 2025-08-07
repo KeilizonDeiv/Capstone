@@ -17,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const ScanScreen(),
-    const HistoryScreen(), // ✅ History screen
+    const HistoryScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -44,10 +44,10 @@ class _MainNavigationState extends State<MainNavigation> {
           ],
         ),
         child: FloatingActionButton(
-          backgroundColor: core_colors.AppColors.primary,
-          onPressed: () => _onItemTapped(1), // ScanScreen index
+          backgroundColor: Color(0xFF0C553B),
+          onPressed: () => _onItemTapped(1),
           shape: const CircleBorder(),
-          child: const Icon(Icons.center_focus_strong, size: 30),
+          child: const Icon(Icons.center_focus_strong, size: 25, color: Colors.white),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -59,41 +59,51 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
         child: BottomAppBar(
           shape: const CircularNotchedRectangle(),
+          notchMargin: 8.0,
           color: Colors.white,
-          elevation: 10,
-          notchMargin: 8,
           child: SizedBox(
-            height: 45,
+            height: 60,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // Home
-                SizedBox(
-                  height: 30,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.home_outlined,
-                      size: 30,
-                      color: _selectedIndex == 0
-                          ? core_colors.AppColors.primary
-                          : Colors.grey,
+              children: <Widget>[
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _onItemTapped(0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.home,
+                          color: _selectedIndex == 0
+                              ? const Color(0xFF0C553B)
+                              : Colors.grey,
+                        ),
+                        const Text(
+                          'Home',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
                     ),
-                    onPressed: () => _onItemTapped(0),
                   ),
                 ),
-
-                // History
-                SizedBox(
-                  height: 30,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.history,
-                      size: 24,
-                      color: _selectedIndex == 2
-                          ? core_colors.AppColors.primary
-                          : Colors.grey,
+                const SizedBox(width: 60),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _onItemTapped(2),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.eco,
+                          color: _selectedIndex == 2
+                              ? const Color(0xFF0C553B)
+                              : Colors.grey,
+                        ),
+                        const Text(
+                          'Leaf',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
                     ),
-                    onPressed: () => _onItemTapped(2),
                   ),
                 ),
               ],
