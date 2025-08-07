@@ -99,7 +99,7 @@ class _MainNavigationState extends State<MainNavigation> {
                               : Colors.grey,
                         ),
                         const Text(
-                          'History',
+                          'Herby',
                           style: TextStyle(fontSize: 12),
                         ),
                       ],
