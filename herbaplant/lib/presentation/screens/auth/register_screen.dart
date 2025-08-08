@@ -164,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 'Sign up',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

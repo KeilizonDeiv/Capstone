@@ -181,21 +181,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFF0C553B),
       elevation: 0,
       automaticallyImplyLeading: false,
-      titleSpacing: 0,
+      titleSpacing: 5,
       title: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(width: 4),
           const Text(
             "History",
             style: TextStyle(
-              color: Colors.black,
+              color: Colors.white,
               fontWeight: FontWeight.w600,
               fontSize: 20,
             ),
@@ -220,7 +220,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               _selectedIndexes.length == _history.length
                   ? Icons.deselect
                   : Icons.select_all,
-              color: Colors.black,
+              color: Colors.white,
             ),
             onPressed: _selectAll,
             tooltip: _selectedIndexes.length == _history.length
@@ -235,7 +235,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 : (_isEditMode ? Icons.done : Icons.edit),
             color: _isEditMode && _selectedIndexes.isNotEmpty
                 ? Colors.red
-                : Colors.black,
+                : Colors.white,
             size: 20,
           ),
           label: Text(
@@ -245,7 +245,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             style: TextStyle(
               color: _isEditMode && _selectedIndexes.isNotEmpty
                   ? Colors.red
-                  : Colors.black,
+                  : Colors.white,
             ),
           ),
           onPressed: _isEditMode && _selectedIndexes.isNotEmpty

@@ -7,13 +7,23 @@ class AboutHerbaPlantScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: const Color(0xFF0C553B),
+        elevation: 0,
+        titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.push('/profile'),// use Navigator.pop(context) if you're not using GoRouter
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('About HerbaPlant'),
-        backgroundColor: Colors.green.shade700,
+        title: const Text(
+          "About us",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -36,11 +46,11 @@ class AboutHerbaPlantScreen extends StatelessWidget {
             const SizedBox(height: 20),
             const Text(
               'HerbaPlant is a plant identification and educational app dedicated to Philippine herbal plants. We aim to empower users with knowledge about the medicinal use, growth, and care of these plants.',
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 30),
             const Text(
-              'Developed by Team HerbaTech | 2025',
+              'Developed by HerbaTeam | 2025',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],

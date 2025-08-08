@@ -28,18 +28,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF0C553B),
         elevation: 1,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => context.go('/profile'),
         ),
         centerTitle: false,
         title: const Text(
           'Edit Profile',
           style: TextStyle(
-            color: Color(0xFF0C553B),
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -49,6 +49,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            SizedBox(height: 30),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
