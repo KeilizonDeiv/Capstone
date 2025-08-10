@@ -17,7 +17,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   bool obscureOldPassword = true;
   bool obscureNewPassword = true;
@@ -27,18 +28,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF0C553B),
         elevation: 1,
+        automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => context.go('/profile'),
         ),
-        title: const Text('Edit Profile', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
+        centerTitle: false,
+        title: const Text(
+          'Edit Profile',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        titleSpacing: 0,
       ),
       body: SafeArea(
         child: Column(
           children: [
+            SizedBox(height: 30),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -46,88 +57,124 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
 
-                      /// Profile Image
+                      // Profile Image
                       Center(
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
                             const CircleAvatar(
                               radius: 60,
-                              backgroundImage: AssetImage('assets/image/sample_profile.jpg'),
+                              backgroundImage:
+                                  AssetImage('assets/image/sample_profile.jpg'),
                             ),
                             CircleAvatar(
                               radius: 18,
-                              backgroundColor: AppColors.maingreen,
+                              backgroundColor: Color(0xFF0C553B),
                               child: const Icon(Icons.edit, color: Colors.white, size: 18),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 30),
+                      Container(
+                        width: 400,
+                        height: 1,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 30),
 
-                      /// Email
+                      // Email
                       CustomTextFormField(
                         controller: emailController,
                         label: 'Email Address',
-                        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.maingreen),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: Color(0xFF0C553B),
+                        ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Email is required' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Email is required'
+                            : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
 
                       /// Old Password
                       CustomTextFormField(
                         controller: oldPasswordController,
                         label: 'Old Password',
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
                         obscureText: obscureOldPassword,
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: Color(0xFF0C553B)),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureOldPassword ? Icons.visibility : Icons.visibility_off,
+                            obscureOldPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
-                            setState(() => obscureOldPassword = !obscureOldPassword);
+                            setState(
+                                () => obscureOldPassword = !obscureOldPassword);
                           },
                         ),
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Old password is required' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Old password is required'
+                            : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
 
                       /// New Password
                       CustomTextFormField(
                         controller: newPasswordController,
                         label: 'New Password',
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
                         obscureText: obscureNewPassword,
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: Color(0xFF0C553B)),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+                            obscureNewPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
-                            setState(() => obscureNewPassword = !obscureNewPassword);
+                            setState(
+                                () => obscureNewPassword = !obscureNewPassword);
                           },
                         ),
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'New password is required' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'New password is required'
+                            : null,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
 
                       /// Confirm Password
                       CustomTextFormField(
                         controller: confirmPasswordController,
                         label: 'Confirm Password',
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
                         obscureText: obscureConfirmPassword,
-                        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.maingreen),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: Color(0xFF0C553B)),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                            obscureConfirmPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
-                            setState(() => obscureConfirmPassword = !obscureConfirmPassword);
+                            setState(() => obscureConfirmPassword =
+                                !obscureConfirmPassword);
                           },
                         ),
                         validator: (value) {
@@ -156,21 +203,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: OutlinedButton(
                       onPressed: () => context.pop(),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppColors.maingreen),
+                        side: const BorderSide(color: Color(0xFF0C553B)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Cancel', style: TextStyle(color: AppColors.maingreen)),
+                      child: const Text('Cancel',
+                          style: TextStyle(color: Color(0xFF0C553B))),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
+                        backgroundColor: Color(0xFF0C553B),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -178,16 +228,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             context: context,
                             builder: (ctx) => ConfirmationDialog(
                               title: "Save Changes?",
-                              message: "Are you sure you want to save your updated account info?",
+                              message:
+                                  "Are you sure you want to save your updated account info?",
                               onConfirm: () {
-                                Navigator.of(ctx).pop(); // Close confirmation dialog
-                                Future.delayed(const Duration(milliseconds: 200), () {
+                                Navigator.of(ctx).pop();
+                                Future.delayed(
+                                    const Duration(milliseconds: 200), () {
                                   showDialog(
                                     context: context,
                                     builder: (_) => SuccessDialog(
                                       title: "Success",
                                       message: "Account successfully updated",
-                                      onConfirm: () => Navigator.of(context).pop(),
+                                      onConfirm: () =>
+                                          Navigator.of(context).pop(),
                                     ),
                                   );
                                 });
