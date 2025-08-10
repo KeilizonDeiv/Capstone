@@ -91,14 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundwh,
       appBar: AppBar(
-        backgroundColor: AppColors.maingreen,
+        backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
         centerTitle: false,
         automaticallyImplyLeading: false,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(10),
+          ),
+        ),
         title: Text(
           "Hi, $userName",
           style: const TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         actions: [
           IconButton(
@@ -118,16 +126,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ Moved "Get Started" above
               const GetStartedSteps(),
-
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Text(
-                  'What\'s New?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                child: Row(
+                  children: [
+                    Icon(Icons.question_mark_outlined,
+                        color: Color(0xFF0C553B)),
+                    SizedBox(width: 8),
+                    Text(
+                      'What\'s New?',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
+
               SizedBox(
                 height: 250,
                 child: trendingNews.isEmpty

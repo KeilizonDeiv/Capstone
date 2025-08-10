@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../widgets/chat_widget.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final File? imageFile;
@@ -31,7 +32,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       final isValid = exists && length > 0;
 
       if (isValid) {
-        // Display user image
         setState(() {
           _messages.add({
             'role': 'user',
@@ -42,7 +42,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-        // Simulated bot response for valid image
         setState(() {
           _messages.add({
             'role': 'bot',
@@ -51,7 +50,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           _isTyping = false;
         });
       } else {
-        // Image invalid — notify user and show bot's error response
         setState(() {
           _messages.add({
             'role': 'user',
@@ -71,7 +69,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   String _getBotInfoFromImage(File image) {
-    // Simulate analysis — in future, replace with ML/API logic
     return "This appears to be a sample herbal plant. Here's some basic information...";
   }
 
@@ -106,8 +103,43 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     } else if (message['role'] == 'user') {
       return UserMessageBubble(text: message['text']!, time: timestamp);
     } else {
-      return BotMessageBubble(text: message['text']!, time: timestamp);
+      return _buildBotMessage(message['text']!, timestamp);
     }
+  }
+
+  Widget _buildBotMessage(String text, String time) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              time,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -115,29 +147,52 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Herbabot'),
-        backgroundColor: AppColors.primary,
-        centerTitle: true,
+        backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.child_care_outlined, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              "Herby",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildMessage(_messages[index]);
-              },
+      body: Container(
+        color: const Color(0xFFF5F5F5),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  return _buildMessage(_messages[index]);
+                },
+              ),
             ),
-          ),
-          if (_isTyping)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8.0),
-              child: BotMessageBubble(text: "Typing..."),
-            ),
-          _buildInputField(),
-        ],
+            if (_isTyping)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: BotMessageBubble(text: "Typing..."),
+              ),
+            _buildInputField(),
+          ],
+        ),
       ),
     );
   }
@@ -154,12 +209,30 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               onSubmitted: _sendMessage,
               decoration: const InputDecoration(
                 hintText: 'Type your message...',
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                 border: InputBorder.none,
               ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.send, color: AppColors.primary),
+            icon: const Icon(Icons.add, color: Color(0xFF0C553B)),
+            onPressed: () async {
+              final ImagePicker picker = ImagePicker();
+              final XFile? image =
+                  await picker.pickImage(source: ImageSource.gallery);
+              if (image != null) {
+                // example: you can send the image path as a message or handle it differently
+                setState(() {
+                  _messages.add({
+                    'role': 'user',
+                    'text': '📷 Sent an image: ${image.path}',
+                  });
+                });
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.send, color: Color(0xFF0C553B)),
             onPressed: () => _sendMessage(_controller.text),
           ),
         ],

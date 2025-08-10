@@ -9,6 +9,7 @@ class CustomTextFormField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputType keyboardType;
   final int maxLength;
+  final TextStyle? labelStyle;
 
   const CustomTextFormField({
     super.key,
@@ -18,6 +19,7 @@ class CustomTextFormField extends StatelessWidget {
     this.validator,
     this.obscureText = false,
     this.suffixIcon,
+    this.labelStyle,
     this.keyboardType = TextInputType.text,
     this.maxLength = 50,
   });
@@ -33,6 +35,7 @@ class CustomTextFormField extends StatelessWidget {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: labelStyle,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -42,7 +45,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.green, width: 2),
+          borderSide: const BorderSide(color: Color(0xFF0C553B), width: 2),
         ),
         counterText: "",
       ),
