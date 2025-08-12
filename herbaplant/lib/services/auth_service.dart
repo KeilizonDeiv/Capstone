@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 //! Code here is untested
-// TODO: Implement better debugging for exception returns, also maybe use toasts to display errors? 
+// TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
 class AuthService {
   static const String baseUrl = "http://127.0.0.1:5000/auth";
