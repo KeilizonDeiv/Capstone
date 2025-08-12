@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+//! Untested Code
+
 class PromptService {
   static const String baseUrl = "http://127.0.0.1:5000/prompt";
-
-  //! Untested Code
 
   //* Handle gemini queries
   static Future<Map<String, dynamic>> handlePrompt(

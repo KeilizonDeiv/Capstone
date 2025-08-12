@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//! Code here is untested
+//! Untested Code
 // TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
 class AuthService {
