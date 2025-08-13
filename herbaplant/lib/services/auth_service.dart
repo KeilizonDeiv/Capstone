@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//! Untested Code
 // TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
 class AuthService {
-  static const String baseUrl = "http://127.0.0.1:5000/auth";
+  static const String baseUrl = "http://10.0.2.2:5000/auth"; //* for emulator IP
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -17,7 +16,7 @@ class AuthService {
 
     final response = await http.post(
       url,
-      headers: {"Content Type": "application/json"},
+      headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "email": email,
         "password": password,
@@ -28,6 +27,8 @@ class AuthService {
 
     return jsonDecode(response.body);
   }
+
+//! Code below this comment is untested
 
   //* Register
   static Future<Map<String, dynamic>?> registerUser(
