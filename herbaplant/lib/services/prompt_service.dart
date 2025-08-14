@@ -11,7 +11,7 @@ class PromptService {
 
   //* Handle gemini queries
   static Future<Map<String, dynamic>> handlePrompt(
-      String prompt, XFile imageFile) async {
+      String prompt, XFile? imageFile) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
@@ -21,10 +21,12 @@ class PromptService {
     request.headers['Authorization'] = 'Bearer $token';
     request.fields['prompt'] = prompt;
 
-    request.files.add(await http.MultipartFile.fromPath(
-      'image',
-      imageFile.path,
-    ));
+    if (imageFile != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+      ));
+    }
 
     try {
       var response = await request.send();

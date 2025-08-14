@@ -73,7 +73,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return "This appears to be a sample herbal plant. Here's some basic information...";
   }
 
-  void _sendMessage(String message) {
+  void _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
     setState(() {
@@ -82,15 +82,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _isTyping = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final response = await PromptService.handlePrompt(message, null);
+
+      if (response.containsKey("error")) {
+        String errorMessage = response["error"];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("⚠️ $errorMessage")),
+        );
+      }
+
+      final botResponse =
+          response["response"]?.toString() ?? "No response from server";
+
       setState(() {
         _messages.add({
           'role': 'bot',
-          'text': 'This is a bot reply to: "$message"',
+          'text': botResponse,
         });
         _isTyping = false;
       });
-    });
+    } catch (e) {
+      setState(() {
+        _messages.add({
+          'role': 'bot',
+          'text': "An error occurred: $e",
+        });
+        _isTyping = false;
+      });
+    }
+
   }
 
   void _sendImage(XFile image) async {
