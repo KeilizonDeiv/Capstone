@@ -1,16 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 //! Untested Code
 
 class PromptService {
-  static const String baseUrl = "http://127.0.0.1:5000/prompt";
+  static const String baseUrl = "http://192.168.68.119:5000/prompt";
 
   //* Handle gemini queries
   static Future<Map<String, dynamic>> handlePrompt(
-      String prompt, File imageFile) async {
+      String prompt, XFile imageFile) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
@@ -18,7 +19,6 @@ class PromptService {
 
     var request = http.MultipartRequest('POST', url);
     request.headers['Authorization'] = 'Bearer $token';
-    request.headers['Content Type'] = 'multi/form-data';
     request.fields['prompt'] = prompt;
 
     request.files.add(await http.MultipartFile.fromPath(

@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
 class AuthService {
-  static const String baseUrl = "http://10.0.2.2:5000/auth"; //* for emulator IP
+  static const String baseUrl = "http://192.168.68.119:5000/auth"; 
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
