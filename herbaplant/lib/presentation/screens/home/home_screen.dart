@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
-import 'widgets/get_started_steps.dart'; // ✅ Import the Get Started Steps widget
+import 'widgets/get_started_steps.dart';
 import '../profile/profile_screen.dart';
 import 'widgets/notification_service.dart';
+import 'home_tutorial.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,13 +19,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String userName = "User";
   List<dynamic> trendingNews = [];
+  late HomeTutorial tutorial;
 
   @override
   void initState() {
     super.initState();
+    tutorial = HomeTutorial();
     _loadUserFromStorage();
     _fetchTrendingNews();
     _sendNotificationOnce();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tutorial.showTutorial(context);
+    });
   }
 
   void _loadUserFromStorage() async {
@@ -110,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            key: tutorial.profileIconKey,
             icon: const Icon(Icons.person, color: Colors.white),
             onPressed: () {
               Navigator.push(
@@ -142,7 +150,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
               SizedBox(
                 height: 250,
                 child: trendingNews.isEmpty
@@ -157,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return GestureDetector(
                             onTap: () => _openNewsArticle(article["url"]),
                             child: Container(
+                              key: index == 0 ? tutorial.homeButtonKey : null,
                               width: 250,
                               margin: const EdgeInsets.only(right: 10),
                               decoration: BoxDecoration(
@@ -259,6 +267,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, key: tutorial.homeButtonKey),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner, key: tutorial.scannerButtonKey),
+            label: 'Scanner',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.eco, key: tutorial.herbyButtonKey),
+            label: 'Herby',
+          ),
+        ],
       ),
     );
   }
