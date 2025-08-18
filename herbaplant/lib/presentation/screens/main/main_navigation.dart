@@ -79,7 +79,7 @@ class _MainNavigationState extends State<MainNavigation> {
                         ),
                         const Text(
                           'Home',
-                          style: TextStyle(fontSize: 12),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -106,7 +106,7 @@ class _MainNavigationState extends State<MainNavigation> {
                         ),
                         const Text(
                           'Herby',
-                          style: TextStyle(fontSize: 12),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),

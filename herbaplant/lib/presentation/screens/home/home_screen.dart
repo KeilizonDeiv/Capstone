@@ -97,16 +97,38 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
+            bottom: Radius.circular(5),
           ),
         ),
-        title: Text(
-          "Hi, $userName",
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        title: Row(
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundImage: AssetImage('assets/image/sample_profile.jpg'),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Hello 👋",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: Color(0xFF888888),
+                  ),
+                ),
+                Text(
+                  "Hi, $userName",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -131,18 +153,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   children: [
-                    Icon(Icons.question_mark_outlined,
-                        color: Color(0xFF0C553B)),
-                    SizedBox(width: 8),
                     Text(
-                      'What\'s New?',
+                      'Featured',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-
               SizedBox(
                 height: 250,
                 child: trendingNews.isEmpty

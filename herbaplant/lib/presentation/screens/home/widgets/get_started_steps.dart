@@ -15,24 +15,22 @@ class GetStartedSteps extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
+          padding: EdgeInsets.only(
+              left: 16.0, right: 16.0, top: 10.0),
           child: Row(
             children: [
-              Icon(Icons.touch_app, color: Color(0xFF0C553B)),
-              SizedBox(width: 8),
               Text(
                 'Get Started',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
         ),
-
         SizedBox(
           height: 250,
           child: ListView.builder(
@@ -80,7 +78,7 @@ class GetStartedSteps extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(5),
                           child: Image.asset(
                             'assets/image/Getstart${index + 1}.png',
                             width: 250,
@@ -105,8 +103,7 @@ class GetStartedSteps extends StatelessWidget {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 6.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
