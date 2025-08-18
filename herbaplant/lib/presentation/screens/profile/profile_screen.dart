@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
 import 'package:herbaplant/presentation/screens/history/history_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -197,10 +198,23 @@ class ProfileScreen extends StatelessWidget {
                         label: "About Us",
                         subtitle: "Learn more about our app",
                         onTap: () => context.push('/about'),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.school_outlined,
+                        label: "Show Tutorial",
+                        subtitle: "View the app walkthrough again",
+                        onTap: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool(
+                              "tutorial_shown", false); // Reset tutorial flag
+                          Navigator.of(context).pushNamed('/home');
+                        },
                         showDivider: false,
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
                   const SizedBox(height: 30),
                   Container(
                     width: double.infinity,
