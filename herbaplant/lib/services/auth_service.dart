@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
+//! Code encased in warning [!] sign is untested
 
 class AuthService {
-  static const String baseUrl = "http://192.168.68.119:5000/auth"; 
+  static const String baseUrl = "http://192.168.68.119:5000/auth";
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -28,18 +29,16 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
-//! Code below this comment is untested
-
   //* Register
   static Future<Map<String, dynamic>?> registerUser(
     String username,
     String email,
     String password,
   ) async {
-    final url = Uri.parse("$baseUrl/auth/register");
+    final url = Uri.parse("$baseUrl/register");
 
     final response = await http.post(url,
-        headers: {"Content Type": "application/json"},
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "username": username,
           "email": email,
@@ -51,12 +50,14 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
+  //! [!] Start
+
   //* Forgot Password
   static Future<Map<String, dynamic>?> forgotPassword(String email) async {
     final url = Uri.parse("$baseUrl/forgot-password");
 
     final response = await http.post(url,
-        headers: {"Content Type": "application/json"},
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": email,
         }));
@@ -71,7 +72,7 @@ class AuthService {
     final url = Uri.parse("$baseUrl/guest");
 
     final response =
-        await http.post(url, headers: {"Content Type": "application/json"});
+        await http.post(url, headers: {"Content-Type": "application/json"});
 
     if (response.statusCode == 400) return jsonDecode(response.body);
 
@@ -91,7 +92,7 @@ class AuthService {
       final response = await http.get(
         url,
         headers: {
-          "Content Type": "application/json",
+          "Content-Type": "application/json",
           "Authorization": "Bearer $token"
         },
       );
@@ -106,17 +107,19 @@ class AuthService {
     }
   }
 
+  //! [!] End
+
   //* Update First time login
-  static Future<Map<String, dynamic?>> updateFirstTimeLogin() async {
+  static Future<Map<String, dynamic>> updateFirstTimeLogin() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
     final url = Uri.parse("$baseUrl/update-first-time-login");
 
-    final response = await http.get(
+    final response = await http.post(
       url,
       headers: {
-        "Content Type": "application/json",
+        "Content-Type": "application/json",
         "Authorization": "Bearer $token"
       },
     );
@@ -124,6 +127,8 @@ class AuthService {
     if (response.statusCode == 400) return jsonDecode(response.body);
     return jsonDecode(response.body);
   }
+
+  //! [!] Start
 
   //* Update User
   static Future<bool> updateUser(String field, String newValue) async {
@@ -134,7 +139,7 @@ class AuthService {
 
     final response = await http.put(url,
         headers: {
-          "Content Type": "application/json",
+          "Content-Type": "application/json",
           "Authorization": "Bearer $token"
         },
         body: jsonEncode({field: newValue}));
@@ -147,5 +152,23 @@ class AuthService {
     // TODO: Add force logout logic here if email is updated
 
     return true;
+  }
+
+  //! [!] End
+
+  //* Get user info
+  static Future<Map<String, dynamic>> getUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    final url = Uri.parse("$baseUrl/user-info");
+    final response = await http.get(url, headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token"
+    });
+
+    if (response.statusCode == 400) return jsonDecode(response.body);
+
+    return jsonDecode(response.body);
   }
 }

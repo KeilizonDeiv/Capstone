@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
 import 'package:herbaplant/presentation/screens/history/history_screen.dart';
+import 'package:herbaplant/routes/routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (navigatorKey.currentContext == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      GoRouter.of(navigatorKey.currentContext!).go('/login');
+    });
+  }
 
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
@@ -46,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              context.go('/login');
+              _logout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade400,

@@ -31,14 +31,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response!.containsKey("error")) {
         String errorMessage = response["error"];
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("⚠️ $errorMessage")),
+          SnackBar(content: Text(errorMessage)),
         );
       }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("token", response["token"]);
-
-      //* Add logic for first login here
 
       GoRouter.of(context).go('/home');
     }
