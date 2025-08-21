@@ -46,6 +46,7 @@ dependencies:
   flutter_slidable: ^3.0.0
   camera: ^0.11.2
   path_provider: ^2.1.5
+  http: ^1.5.0
   
 
 dev_dependencies:
