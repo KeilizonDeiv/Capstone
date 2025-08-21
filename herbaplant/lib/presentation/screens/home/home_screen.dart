@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:herbaplant/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -22,9 +23,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _getUserData();
     _loadUserFromStorage();
     _fetchTrendingNews();
     _sendNotificationOnce();
+  }
+
+  void _updateFirstTimeLogin() async {
+    try {
+      await AuthService.updateFirstTimeLogin();
+    } catch (e) {
+      debugPrint("Error updating first_time_login: $e");
+    }
+  }
+
+  Future<void> _getUserData() async {
+    try {
+      _updateFirstTimeLogin();
+
+      final userData = await AuthService.getUserInfo();
+
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setInt("id", userData["id"]);
+      await prefs.setString("username", userData["username"]);
+      await prefs.setString("email", userData["email"]);
+      await prefs.setBool("verified", userData["verified"]);
+      await prefs.setBool("first_time_login", userData["first_time_login"]);
+    } catch (e) {
+      debugPrint("Error fetching user data: $e");
+    }
   }
 
   void _loadUserFromStorage() async {
@@ -142,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
               SizedBox(
                 height: 250,
                 child: trendingNews.isEmpty

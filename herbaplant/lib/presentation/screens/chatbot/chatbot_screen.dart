@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:herbaplant/services/prompt_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../widgets/chat_widget.dart';
 import 'package:image_picker/image_picker.dart';
@@ -72,7 +73,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return "This appears to be a sample herbal plant. Here's some basic information...";
   }
 
-  void _sendMessage(String message) {
+  void _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
     setState(() {
@@ -81,15 +82,76 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _isTyping = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final response = await PromptService.handlePrompt(message, null);
+
+      if (response.containsKey("error")) {
+        String errorMessage = response["error"];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("⚠️ $errorMessage")),
+        );
+      }
+
+      final botResponse =
+          response["response"]?.toString() ?? "No response from server";
+
       setState(() {
         _messages.add({
           'role': 'bot',
-          'text': 'This is a bot reply to: "$message"',
+          'text': botResponse,
         });
         _isTyping = false;
       });
+    } catch (e) {
+      setState(() {
+        _messages.add({
+          'role': 'bot',
+          'text': "An error occurred: $e",
+        });
+        _isTyping = false;
+      });
+    }
+
+  }
+
+  void _sendImage(XFile image) async {
+    setState(() {
+      _messages.add({
+        'role': 'user',
+        'imagePath': image.path,
+      });
+      _isTyping = true;
     });
+
+    try {
+      final response = await PromptService.handlePrompt("", image);
+
+      if (response.containsKey("error")) {
+        String errorMessage = response["error"];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("⚠️ $errorMessage")),
+        );
+      }
+
+      final botResponse =
+          response["response"]?.toString() ?? "No response from server";
+
+      setState(() {
+        _messages.add({
+          'role': 'bot',
+          'text': botResponse,
+        });
+        _isTyping = false;
+      });
+    } catch (e) {
+      setState(() {
+        _messages.add({
+          'role': 'bot',
+          'text': "An error occurred: $e",
+        });
+        _isTyping = false;
+      });
+    }
   }
 
   Widget _buildMessage(Map<String, String> message) {
@@ -222,12 +284,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   await picker.pickImage(source: ImageSource.gallery);
               if (image != null) {
                 // example: you can send the image path as a message or handle it differently
-                setState(() {
-                  _messages.add({
-                    'role': 'user',
-                    'text': '📷 Sent an image: ${image.path}',
-                  });
-                });
+                // setState(() {
+                //   _messages.add({
+                //     'role': 'user',
+                //     'text': '📷 Sent an image: ${image.path}',
+                //   });
+                // });
+                _sendImage(image);
               }
             },
           ),
