@@ -4,10 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//! Untested Code
-
 class PromptService {
-  static const String baseUrl = "http://192.168.68.119:5000/prompt";
+  static const String baseUrl = "http://192.168.68.106:5000/prompt";
 
   //* Handle gemini queries
   static Future<Map<String, dynamic>> handlePrompt(
