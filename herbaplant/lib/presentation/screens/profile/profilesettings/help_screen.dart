@@ -50,11 +50,11 @@ class HelpScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.email),
-            title: const Text('support@herbaplant.app'),
+            title: const Text('herbaplant00@gmail.com'),
           ),
           ListTile(
             leading: const Icon(Icons.phone),
-            title: const Text('+63 912 345 6789'),
+            title: const Text('+63 954 295 5415'),
           ),
         ],
       ),

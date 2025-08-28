@@ -8,6 +8,8 @@ import '../../../core/constants/app_colors.dart';
 import 'widgets/get_started_steps.dart'; // ✅ Import the Get Started Steps widget
 import '../profile/profile_screen.dart';
 import 'widgets/notification_service.dart';
+import 'package:herbaplant/services/article_service.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
-    final url = Uri.parse("http://192.168.100.203:5000/trending-news");
+    // final url = Uri.parse("http://127.0.0.1:5000/articles/trending-news"); //uncomment for local 192.168.254.172
+    final url = Uri.parse("http://192.168.254.172:5000/articles/trending-news"); //uncomment for non local
     final response = await http.get(
       url,
       headers: {

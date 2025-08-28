@@ -41,15 +41,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           _isTyping = true;
         });
 
-        await Future.delayed(const Duration(seconds: 2));
+        try {
+          final response =
+              await PromptService.handlePrompt("", XFile(file.path));
 
-        setState(() {
-          _messages.add({
-            'role': 'bot',
-            'text': _getBotInfoFromImage(file),
+          if (response.containsKey("error")) {
+            String errorMessage = response["error"];
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("⚠️ $errorMessage")),
+            );
+          }
+
+          final botResponse =
+              response["response"]?.toString() ?? "No response from server";
+
+          setState(() {
+            _messages.add({
+              'role': 'bot',
+              'text': botResponse,
+            });
+            _isTyping = false;
           });
-          _isTyping = false;
-        });
+        } catch (e) {
+          setState(() {
+            _messages.add({
+              'role': 'bot',
+              'text': "An error occurred: $e",
+            });
+            _isTyping = false;
+          });
+        }
       } else {
         setState(() {
           _messages.add({
@@ -69,10 +90,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  String _getBotInfoFromImage(File image) {
-    return "This appears to be a sample herbal plant. Here's some basic information...";
-  }
-
   void _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
@@ -83,35 +100,26 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
 
     try {
-      final response = await PromptService.handlePrompt(message, null);
+      final response = await PromptService.chatPrompt(message);
 
       if (response.containsKey("error")) {
-        String errorMessage = response["error"];
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("⚠️ $errorMessage")),
+          SnackBar(content: Text("⚠️ ${response["error"]}")),
         );
       }
 
-      final botResponse =
-          response["response"]?.toString() ?? "No response from server";
+      final botResponse = response["response"] ?? "No response from server";
 
       setState(() {
-        _messages.add({
-          'role': 'bot',
-          'text': botResponse,
-        });
+        _messages.add({'role': 'bot', 'text': botResponse});
         _isTyping = false;
       });
     } catch (e) {
       setState(() {
-        _messages.add({
-          'role': 'bot',
-          'text': "An error occurred: $e",
-        });
+        _messages.add({'role': 'bot', 'text': "❌ Error: $e"});
         _isTyping = false;
       });
     }
-
   }
 
   void _sendImage(XFile image) async {
@@ -164,8 +172,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       );
     } else if (message['role'] == 'user') {
       return UserMessageBubble(text: message['text']!, time: timestamp);
-    } else {
+    } else if (message['role'] == 'bot') {
       return _buildBotMessage(message['text']!, timestamp);
+    } else {
+      return const SizedBox.shrink();
     }
   }
 
@@ -200,6 +210,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDisclaimer() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Text(
+        "⚠️ Disclaimer: Herby is not a medical professional. This information is for educational purposes only and should not replace advice from a qualified healthcare provider. If you experience severe symptoms, please seek medical attention immediately.",
+        style: TextStyle(
+          fontSize: 11,
+          fontStyle: FontStyle.italic,
+          color: Colors.grey[600],
+          height: 1.3,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -252,6 +278,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: BotMessageBubble(text: "Typing..."),
               ),
+
+            // 👇 Disclaimer permanently above the input field
+            _buildDisclaimer(),
+
             _buildInputField(),
           ],
         ),
@@ -270,8 +300,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               controller: _controller,
               onSubmitted: _sendMessage,
               decoration: const InputDecoration(
-                hintText: 'Type your message...',
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                hintText: 'Ask Herby about Herbal Plants...',
+                hintStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -283,13 +317,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               final XFile? image =
                   await picker.pickImage(source: ImageSource.gallery);
               if (image != null) {
-                // example: you can send the image path as a message or handle it differently
-                // setState(() {
-                //   _messages.add({
-                //     'role': 'user',
-                //     'text': '📷 Sent an image: ${image.path}',
-                //   });
-                // });
                 _sendImage(image);
               }
             },

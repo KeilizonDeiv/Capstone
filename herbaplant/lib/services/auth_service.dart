@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 //! Code encased in warning [!] sign is untested
 
 class AuthService {
-  static const String baseUrl = "http://192.168.68.119:5000/auth";
+  // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
+  static const String baseUrl = "http://192.168.254.172:5000/auth"; //uncomment for non local
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -66,6 +67,36 @@ class AuthService {
 
     return jsonDecode(response.body);
   }
+
+  static Future<Map<String, dynamic>> resetPassword(
+    String token, String newPassword, String confirmPassword) async {
+      final url = Uri.parse("$baseUrl/reset-password?token=$token");
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "new_password": newPassword,
+          "confirm_password": confirmPassword,
+        }),
+      );
+
+      return jsonDecode(response.body);
+    }
+
+  //* Google Sign In
+  static Future<Map<String, dynamic>?> loginWithGoogle(String? idToken) async {
+  final url = Uri.parse("$baseUrl/google-login");
+
+  final response = await http.post(url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"id_token": idToken}));
+
+  if (response.statusCode == 400) return jsonDecode(response.body);
+
+  return jsonDecode(response.body);
+}
+
 
   //* Log in as Guest
   static Future<Map<String, dynamic>?> loginAsGuest() async {
@@ -155,6 +186,41 @@ class AuthService {
   }
 
   //! [!] End
+
+  //* Change Password
+    static Future<Map<String, dynamic>> changePassword(
+      String oldPassword, String newPassword) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    final url = Uri.parse("$baseUrl/change-password");
+
+    try {
+      print("➡️ Sending change-password request to $url");
+      print("   Headers: Authorization Bearer $token");
+      print("   Body: old=$oldPassword new=$newPassword");
+
+      final response = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode({
+          "old_password": oldPassword,
+          "new_password": newPassword,
+        }),
+      );
+
+      print("⬅️ Response ${response.statusCode}: ${response.body}");
+
+      return jsonDecode(response.body);
+    } catch (e, stack) {
+      print("❌ changePassword failed: $e");
+      print(stack);
+      return {"error": "Request failed: $e"};
+    }
+  }
 
   //* Get user info
   static Future<Map<String, dynamic>> getUserInfo() async {
