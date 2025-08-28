@@ -1,11 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
+const List<String> scopes = <String>[
+  'email',
+  'profile',
+  'openid'
+      'https://www.googleapis.com/auth/contacts.readonly',
+];
+
 class AuthService {
   static const String baseUrl = "http://192.168.68.106:5000/auth";
+
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: scopes);
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -26,6 +37,38 @@ class AuthService {
     if (response.statusCode == 400) return jsonDecode(response.body);
 
     return jsonDecode(response.body);
+  }
+
+  //* Google Signin
+  static Future<Map<String, dynamic>?> signInWithGoogle() async {
+    final url = Uri.parse("$baseUrl/google_login");
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw Exception("Google returned null idToken");
+      }
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"id_token": idToken}),
+      );
+
+      if (response.statusCode == 400) return jsonDecode(response.body);
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      throw Exception("Error in google sign in: $e");
+    }
   }
 
   //* Register

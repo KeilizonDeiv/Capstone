@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:herbaplant/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'register_screen.dart';
@@ -11,11 +13,29 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+const List<String> scopes = <String>[
+  'https://www.googleapis.com/auth/contacts.readonly',
+];
+
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  void _handleGoogleSignIn() async {
+    final response = await AuthService.signInWithGoogle();
+
+    if (response == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Sign in with gooogle failed.")));
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("token", response!["token"]);
+
+    GoRouter.of(context).go('/home');
+  }
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -275,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       SizedBox(
                                         width: double.infinity,
                                         child: OutlinedButton(
-                                          onPressed: () {},
+                                          onPressed: _handleGoogleSignIn,
                                           style: OutlinedButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 12),
