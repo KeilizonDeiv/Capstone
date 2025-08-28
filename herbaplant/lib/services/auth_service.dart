@@ -9,14 +9,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 const List<String> scopes = <String>[
   'email',
   'profile',
-  'openid'
-      'https://www.googleapis.com/auth/contacts.readonly',
+  'openid',
+  'https://www.googleapis.com/auth/contacts.readonly',
 ];
 
 class AuthService {
   static const String baseUrl = "http://192.168.68.106:5000/auth";
 
-  static final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: scopes);
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: scopes,
+    serverClientId:
+        "456318535404-15ng1j04sm85qp3apub9rjbmcmap8nmf.apps.googleusercontent.com",
+  );
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -44,6 +48,7 @@ class AuthService {
     final url = Uri.parse("$baseUrl/google_login");
 
     try {
+      await _googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) return null;

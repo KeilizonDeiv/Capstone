@@ -13,10 +13,6 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-const List<String> scopes = <String>[
-  'https://www.googleapis.com/auth/contacts.readonly',
-];
-
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
