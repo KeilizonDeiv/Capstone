@@ -89,7 +89,7 @@ class ImageMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final alignment = isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final borderColor = isUser ? AppColors.primary : Colors.green;
+    final borderColor = isUser ? AppColors.primary : Color(0xFF0C553B);
 
     final file = File(imagePath);
 

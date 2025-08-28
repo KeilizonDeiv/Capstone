@@ -15,14 +15,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-
     _lottieController = AnimationController(vsync: this);
 
-    // Navigate to LoginScreen after delay
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) context.go('/login'); // ⬅️ Navigate to login screen only
+      final location =
+          GoRouter.of(context).routeInformationProvider.value.uri.path;
+
+      debugPrint("⏳ Splash redirect check, location=$location");
+
+      if (mounted && (location == "/" || location.isEmpty)) {
+        context.go('/login');
+      }
     });
   }
+
 
   @override
   void dispose() {
@@ -37,7 +43,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Lottie animation background
           Positioned.fill(
             child: Lottie.asset(
               'assets/animations/splash.json',
@@ -50,8 +55,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               },
             ),
           ),
-
-          // Centered logo
           Center(
             child: Image.asset(
               'assets/image/logonobg.png',

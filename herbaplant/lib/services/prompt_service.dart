@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 //! Untested Code
 
 class PromptService {
-  static const String baseUrl = "http://192.168.68.119:5000/prompt";
+  static const String baseUrl = "http://192.168.254.172:5000/prompt"; //uncomment for non local
+  // static const String baseUrl = "http://127.0.0.1:5000/prompt"; //uncomment for local
 
   //* Handle gemini queries
   static Future<Map<String, dynamic>> handlePrompt(
@@ -32,7 +33,7 @@ class PromptService {
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
 
-      if (response.statusCode == 400) {
+      if (response.statusCode >= 400) {
         return {
           "error": "Error in handlePrompt, Server Response: $responseBody"
         };
@@ -43,4 +44,28 @@ class PromptService {
       return {"error": "Error in handlePrompt"};
     }
   }
+
+  static Future<Map<String, dynamic>> chatPrompt(String prompt) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    final url = Uri.parse("$baseUrl/chat");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode({"prompt": prompt}),
+    );
+
+    if (response.statusCode >= 400) {
+      return {"error": response.body};
+    }
+
+    return jsonDecode(response.body);
+  }
+
+
 }
