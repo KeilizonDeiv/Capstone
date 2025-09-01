@@ -6,6 +6,8 @@ import 'package:herbaplant/core/constants/app_colors.dart';
 import 'package:herbaplant/presentation/widgets/custom_text_form_field.dart';
 import 'package:herbaplant/presentation/widgets/success_dialog.dart';
 import 'package:herbaplant/services/auth_service.dart';
+import 'package:herbaplant/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -273,42 +275,90 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
+                        final isChangingPassword = oldPasswordController.text.isNotEmpty ||
+                                                  newPasswordController.text.isNotEmpty ||
+                                                  confirmPasswordController.text.isNotEmpty;
+
+                        if (isChangingPassword) {
+                          if (_formKey.currentState!.validate()) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => ConfirmationDialog(
+                                title: "Save Changes?",
+                                message: "Are you sure you want to update your password?",
+                                onConfirm: () async {
+                                  Navigator.of(ctx).pop();
+                                  final result = await AuthService.changePassword(
+                                    oldPasswordController.text.trim(),
+                                    newPasswordController.text.trim(),
+                                  );
+
+                                  if (result["error"] != null) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => SuccessDialog(
+                                        title: "Error",
+                                        message: result["error"],
+                                        onConfirm: () => Navigator.of(context).pop(),
+                                      ),
+                                    );
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => SuccessDialog(
+                                        title: "Success",
+                                        message: result["message"] ?? "Password updated",
+                                        onConfirm: () => Navigator.of(context).pop(),
+                                      ),
+                                    );
+                                  }
+                                },
+                                onCancel: () => Navigator.of(ctx).pop(),
+                              ),
+                            );
+                          }
+                        } else {
+                          // 🚀 Just save image (no password required)
                           showDialog(
                             context: context,
-                            builder: (ctx) => ConfirmationDialog(
-                              title: "Save Changes?",
-                              message: "Are you sure you want to update your password?",
-                              onConfirm: () async {
-                                Navigator.of(ctx).pop();
-                                final result = await AuthService.changePassword(
-                                  oldPasswordController.text.trim(),
-                                  newPasswordController.text.trim(),
-                                );
-
-                                if (result["error"] != null) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => SuccessDialog(
-                                      title: "Error",
-                                      message: result["error"],
-                                      onConfirm: () => Navigator.of(context).pop(),
-                                    ),
-                                  );
-                                } else {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => SuccessDialog(
-                                      title: "Success",
-                                      message: result["message"] ?? "Password updated",
-                                      onConfirm: () => Navigator.of(context).pop(),
-                                    ),
-                                  );
-                                }
-                              },
-                              onCancel: () => Navigator.of(ctx).pop(),
+                            builder: (_) => SuccessDialog(
+                              title: "Success",
+                              message: "Profile picture updated successfully!",
+                              onConfirm: () => Navigator.of(context).pop(),
                             ),
                           );
+                          if (_imageFile != null) {
+                            final result = await UserService.updateProfilePicture(_imageFile!);
+
+                            if (result["error"] != null) {
+                              showDialog(
+                                context: context,
+                                builder: (_) => SuccessDialog(
+                                  title: "Error",
+                                  message: result["error"],
+                                  onConfirm: () => Navigator.of(context).pop(),
+                                ),
+                              );
+                            } else {
+                              // 🔑 Save new profile image path into SharedPreferences
+                              if (result["profile_image"] != null) {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setString("profile_image", result["profile_image"]);
+                              }
+
+                              showDialog(
+                                context: context,
+                                builder: (_) => SuccessDialog(
+                                  title: "Success",
+                                  message: result["message"] ?? "Profile picture updated successfully!",
+                                  onConfirm: () {
+                                    Navigator.of(context).pop();
+                                    context.go('/profile'); // reload profile screen
+                                  },
+                                ),
+                              );
+                            }
+                          }
                         }
                       },
                       child: const Text("Save"),

@@ -35,16 +35,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final userHistory = await UserService.getUserHistory();
     final imageHistory = await UserService.getImageHistory();
 
-    // merge both lists
-    final combined = [...userHistory, ...imageHistory];
+    // merge and deduplicate by ID
+    final Map<int, Map<String, dynamic>> unique = {};
+    for (final item in [...userHistory, ...imageHistory]) {
+      final id = item['id'];
+      if (id != null) {
+        unique[id] = item; // overwrites duplicates, keeps only one per id
+      }
+    }
 
-    // sort newest to oldest using timestamp if available
+    final combined = unique.values.toList();
+
+    // sort newest first
     combined.sort((a, b) {
       final aTime = DateTime.tryParse(a['timestamp']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0);
       final bTime = DateTime.tryParse(b['timestamp']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0);
-      return bTime.compareTo(aTime); // newest first
+      return bTime.compareTo(aTime);
     });
 
     setState(() {
@@ -52,6 +60,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       _isLoading = false;
     });
   }
+
 
   void _toggleEditMode() {
     setState(() {
@@ -72,46 +81,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  void _deleteSelected() {
-    if (_selectedIndexes.isEmpty) return;
+    void _deleteSelected() async {
+      if (_selectedIndexes.isEmpty) return;
 
-    final selectedCount = _selectedIndexes.length;
-    final itemLabel = selectedCount > 1 ? 'items' : 'item';
+      final selectedItems = _selectedIndexes.map((i) => _history[i]).toList();
+      final ids = selectedItems
+        .map((item) => item['id'])
+        .where((id) => id != null)
+        .cast<int>()
+        .toList();
 
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmationDialog(
-        title: 'Delete Selected History?',
-        message:
-            'Are you sure you want to delete $selectedCount selected $itemLabel?',
-        onConfirm: () {
-          setState(() {
-            final sortedIndexes = _selectedIndexes.toList()
-              ..sort((a, b) => b.compareTo(a));
-            for (final index in sortedIndexes) {
-              if (index >= 0 && index < _history.length) {
-                _history.removeAt(index);
-              }
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => ConfirmationDialog(
+          title: 'Delete Selected History?',
+          message:
+              'Are you sure you want to delete ${ids.length} selected item(s)?',
+          onConfirm: () => Navigator.of(context).pop(true),
+          onCancel: () => Navigator.of(context).pop(false),
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final success = await UserService.deleteHistoryItems(ids);
+
+      if (success) {
+        setState(() {
+          final sortedIndexes = _selectedIndexes.toList()
+            ..sort((a, b) => b.compareTo(a));
+          for (final index in sortedIndexes) {
+            if (index >= 0 && index < _history.length) {
+              _history.removeAt(index);
             }
+          }
+          _selectedIndexes.clear();
+          _isEditMode = false;
+        });
 
-            _selectedIndexes.clear();
-            _isEditMode = false;
-          });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${ids.length} item(s) deleted.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("⚠️ Failed to delete history.")),
+        );
+      }
+    }
 
-          Navigator.of(context).pop();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$selectedCount $itemLabel deleted.'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-        onCancel: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
 
   void _selectAll() {
     setState(() {
@@ -381,48 +399,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final imgUrl = item['img_url']?.toString() ?? '';
 
     try {
-      // Try parse JSON (plant identify mode)
+      // Try parse JSON (plant identification)
       final cleaned = responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
       final decoded = jsonDecode(cleaned);
 
-      final plant = PlantInfo.fromJson(decoded);
+      if (decoded is Map && decoded.containsKey("name")) {
+        // 🚀 This is a plant identification → go to PlantInfoScreen
+        final plant = PlantInfo.fromJson(Map<String, dynamic>.from(decoded));
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PlantInfoScreen(
-            plant: plant,
-            imageUrl: imgUrl, // ✅ show image here
-          ),
-        ),
-      );
-    } catch (e) {
-      // Not JSON → this is a chat, so NO image shown
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text("Plant Details"),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(responseStr),
-                const SizedBox(height: 10),
-                Text(
-                  "Date: ${_formatTimestamp(item['timestamp']?.toString() ?? item['date'] ?? '')}",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PlantInfoScreen(
+              plant: plant,
+              imageUrl: imgUrl,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Close"),
-            ),
-          ],
-        ),
-      );
+        );
+        return;
+      }
+    } catch (_) {
+      // ignore parse errors
     }
+
+    // 🚀 Otherwise → treat as chat message
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Chat Prompt"),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(responseStr), // plain text response
+              const SizedBox(height: 10),
+              Text(
+                "Date: ${_formatTimestamp(item['timestamp']?.toString() ?? item['date'] ?? '')}",
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
   }
+
 }

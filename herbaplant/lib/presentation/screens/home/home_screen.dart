@@ -25,10 +25,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _getUserData();
-    _loadUserFromStorage();
+    _initUser();
     _fetchTrendingNews();
     _sendNotificationOnce();
+  }
+
+  Future<void> _initUser() async {
+    await _getUserData();   // wait for API call & prefs save
+    await _loadUserFromStorage(); // then load into state
   }
 
   void _updateFirstTimeLogin() async {
@@ -52,12 +56,16 @@ class _HomeScreenState extends State<HomeScreen> {
       await prefs.setString("email", userData["email"]);
       await prefs.setBool("verified", userData["verified"]);
       await prefs.setBool("first_time_login", userData["first_time_login"]);
+
+      if (userData["profile_image"] != null) {
+        await prefs.setString("profile_image", userData["profile_image"]);
+      }
     } catch (e) {
       debugPrint("Error fetching user data: $e");
     }
   }
 
-  void _loadUserFromStorage() async {
+  Future<void> _loadUserFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       userName = prefs.getString("username") ?? "User";

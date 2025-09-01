@@ -15,6 +15,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _username = "";
   String _email = "";
+  String? _profileImage;
 
   @override
   void initState() {
@@ -27,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _username = prefs.getString("username") ?? "User";
       _email = prefs.getString("email") ?? "No email";
+      _profileImage = prefs.getString("profile_image");
     });
   }
 
@@ -147,10 +149,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 50,
-                        backgroundImage:
-                            AssetImage('assets/image/sample_profile.jpg'),
+                        backgroundImage: _profileImage != null && _profileImage!.isNotEmpty
+                          ? NetworkImage("http://192.168.254.172:5000${_profileImage!}")
+                          : AssetImage('assets/image/sample_profile.jpg') as ImageProvider,
                       ),
                     ),
                     const SizedBox(height: 16),
