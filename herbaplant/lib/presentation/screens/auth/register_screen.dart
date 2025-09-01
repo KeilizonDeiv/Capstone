@@ -32,21 +32,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (response == null || response.containsKey("error")) {
       final errorMessage = response?["error"] ?? "Register Failed";
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(errorMessage)));
-
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Registration Successful! Returning to login...")));
+    final msg = response["message"] ?? "Registration successful!";
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.green),
+    );
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!context.mounted) return;
-    GoRouter.of(context).go('/login');
+    // 🔥 Navigate immediately, don’t wait 2s
+    context.go('/login');
   }
+
 
   @override
   Widget build(BuildContext context) {

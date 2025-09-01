@@ -21,14 +21,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// - Normal launch → initialLocation = '/'
 /// - Deep link launch (e.g. herbaplant://reset-password?token=123)
 ///   → initialLocation = '/reset-password?token=123'
-GoRouter createRouter({String initialLocation = '/'}) {
+GoRouter createRouter() {
   return GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: initialLocation,
+    initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) => SplashScreen(), // we’ll update next
       ),
       GoRoute(
         path: '/reset-password',
@@ -65,10 +65,6 @@ GoRouter createRouter({String initialLocation = '/'}) {
         path: '/edit-profile',
         builder: (context, state) => const EditProfileScreen(),
       ),
-      // GoRoute(
-      //   path: '/prompt-history',
-      //   builder: (context, state) => const PromptHistoryScreen(),
-      // ),
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
@@ -83,21 +79,16 @@ GoRouter createRouter({String initialLocation = '/'}) {
       ),
     ],
     redirect: (context, state) {
-      // ✅ Allow reset-password deep link
-      if (state.matchedLocation == '/reset-password' &&
-          state.uri.queryParameters.containsKey('token')) {
-        return null;
-      }
+      final loc = state.uri.toString();
 
-      // ✅ If we’re at splash, don’t immediately push to login.
-      // Let the splash screen decide (or deep link handler fire).
-      if (state.matchedLocation == '/') {
-        return null; // no auto-redirect here
+      // 🩹 Normalize trailing slash for reset-password
+      if (loc.startsWith('/reset-password/')) {
+        final fixed = loc.replaceFirst('/reset-password/', '/reset-password');
+        return fixed;
       }
 
       return null;
     },
-
     debugLogDiagnostics: true,
   );
 }

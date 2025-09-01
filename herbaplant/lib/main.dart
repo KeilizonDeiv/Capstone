@@ -2,46 +2,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:go_router/go_router.dart';
-import 'routes/routes.dart'; // your createRouter + navigatorKey
-
-StreamSubscription<Uri?>? _sub;
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:provider/provider.dart';
+import 'routes/routes.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   final appLinks = AppLinks();
-  final initialUri = await appLinks.getInitialAppLink();
 
-  // Default → splash
-  String initialLocation = '/';
-    if (initialUri != null) {
-      if (initialUri.path.isNotEmpty) {
-        initialLocation = initialUri.path +
-            (initialUri.hasQuery ? '?${initialUri.query}' : '');
-      } else if (initialUri.queryParameters.containsKey('token')) {
-        initialLocation =
-            '/reset-password?token=${initialUri.queryParameters['token']}';
-      }
-    }
-
-  print("🚀 Starting app at $initialLocation");
-
-  runApp(HerbaPlantApp(
-    initialLocation: initialLocation,
-    appLinks: appLinks,
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppSettings(),
+      child: HerbaPlantApp(appLinks: appLinks),
+    ),
+  );
 }
 
-
 class HerbaPlantApp extends StatefulWidget {
-  final String initialLocation;
   final AppLinks appLinks;
-
-  const HerbaPlantApp({
-    super.key,
-    required this.initialLocation,
-    required this.appLinks,
-  });
+  const HerbaPlantApp({super.key, required this.appLinks});
 
   @override
   State<HerbaPlantApp> createState() => _HerbaPlantAppState();
@@ -49,28 +30,23 @@ class HerbaPlantApp extends StatefulWidget {
 
 class _HerbaPlantAppState extends State<HerbaPlantApp> {
   late final GoRouter _router;
+  StreamSubscription<Uri?>? _sub;
 
   @override
   void initState() {
     super.initState();
+    _router = createRouter();
 
-    // 👇 build router with initial deep link location
-    _router = createRouter(initialLocation: widget.initialLocation);
-
-    // 👇 runtime deep link listener (warm start)
     _sub = widget.appLinks.uriLinkStream.listen((uri) {
       if (uri != null && navigatorKey.currentContext != null) {
-        String path;
-        if (uri.path.isNotEmpty) {
-          path = uri.path + (uri.hasQuery ? '?${uri.query}' : '');
-        } else if (uri.queryParameters.containsKey('token')) {
-          path = '/reset-password?token=${uri.queryParameters['token']}';
-        } else {
-          path = '/';
-        }
+        final query = uri.hasQuery ? '?${uri.query}' : '';
+        var path = uri.path.isNotEmpty ? uri.path : '/reset-password';
 
-        debugPrint("📩 Runtime deep link received: $path");
-        GoRouter.of(navigatorKey.currentContext!).go(path);
+        if (path.endsWith('/')) path = path.substring(0, path.length - 1);
+
+        final location = '$path$query';
+        debugPrint("📩 Runtime deep link received: $location");
+        _router.go(location);
       }
     });
   }
@@ -83,13 +59,14 @@ class _HerbaPlantAppState extends State<HerbaPlantApp> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context);
+
     return MaterialApp.router(
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Poppins',
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
     );
   }
 }
