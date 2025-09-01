@@ -22,13 +22,13 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleGoogleSignIn() async {
     final response = await AuthService.signInWithGoogle();
 
-    if (response == null) {
+    if (response == null || response["token"] == null || response.containsKey("error")) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Sign in with gooogle failed.")));
     }
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("token", response!["token"]);
+    await prefs.setString("token", response!['token']);
 
     GoRouter.of(context).go('/home');
   }

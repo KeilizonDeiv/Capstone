@@ -31,15 +31,6 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs{
-        debug{
-            keyAlias = 'herbaplant'
-            keyPassword = 'garlic'
-            storeFile = file('herbaplant-keystore.jks')
-            storePassword = 'garlic'
-        }
-    }
-
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

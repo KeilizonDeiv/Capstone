@@ -19,7 +19,7 @@ class AuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: scopes,
     serverClientId:
-        "456318535404-15ng1j04sm85qp3apub9rjbmcmap8nmf.apps.googleusercontent.com",
+        "456318535404-76pbrr2ko1ecnv53nv09p0ql92p3g83q.apps.googleusercontent.com",
   );
 
   //* Login
