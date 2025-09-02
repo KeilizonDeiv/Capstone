@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:herbaplant/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:herbaplant/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'register_screen.dart';
+
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,12 +61,46 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: ['email', 'profile'],
+);
+
+Future<void> _handleGoogleLogin() async {
+  try {
+    final GoogleSignInAccount? account = await _googleSignIn.signIn();
+    if (account == null) return; // user canceled
+
+    final GoogleSignInAuthentication auth = await account.authentication;
+
+    // 👉 Send this token to your backend
+    final response = await AuthService.loginWithGoogle(auth.idToken);
+
+    if (response == null || response.containsKey("error")) {
+      String msg = response?["error"] ?? "Google login failed";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("token", response["token"]);
+
+    GoRouter.of(context).go('/home');
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("❌ Google login failed: $e")),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFF2D5A3D),
       body: SafeArea(
+        bottom: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Stack(
@@ -234,20 +271,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                         child: Align(
                                           alignment: Alignment.centerRight,
                                           child: TextButton(
-                                            onPressed: () {},
-                                            style: TextButton.styleFrom(
-                                              padding: EdgeInsets.zero,
-                                              minimumSize: Size(0, 0),
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                              );
+                                            },
                                             child: const Text(
-                                              'Forgot password?',
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 12,
-                                              ),
+                                              "Forgot password?",
+                                              style: TextStyle(color: Colors.grey, fontSize: 12),
                                             ),
                                           ),
                                         ),

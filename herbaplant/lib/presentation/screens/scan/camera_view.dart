@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:herbaplant/presentation/screens/plant_info/plant_info.dart';
+import 'package:herbaplant/presentation/screens/plant_info/plant_info_screen.dart';
+import 'package:herbaplant/services/prompt_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../../../core/constants/app_colors.dart';
-import '../../../presentation/screens/chatbot/chatbot_screen.dart';
+import '../../../presentation/screens/plant_info/plant_info.dart';
 
 class CameraView extends StatefulWidget {
   const CameraView({super.key});
@@ -32,6 +35,8 @@ class _CameraViewState extends State<CameraView> {
 
   double _baseScale = 1.0;
   double _currentScale = 1.0;
+
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -144,15 +149,16 @@ class _CameraViewState extends State<CameraView> {
     }
   }
 
-  void _setFocusPoint(TapDownDetails details) {
-    if (_controller?.value.isInitialized != true) return;
+  void _setFocusPoint(TapDownDetails details, BoxConstraints constraints) {
+  if (_controller?.value.isInitialized != true) return;
 
-    final offset = Offset(
-      details.localPosition.dx,
-      details.localPosition.dy,
-    );
-    _controller!.setFocusPoint(offset);
+  final dx = details.localPosition.dx / constraints.maxWidth;
+  final dy = details.localPosition.dy / constraints.maxHeight;
+
+  if (dx >= 0 && dx <= 1 && dy >= 0 && dy <= 1) {
+    _controller!.setFocusPoint(Offset(dx, dy));
   }
+}
 
   void _onScaleStart(ScaleStartDetails details) {
     _baseScale = _currentZoom;
@@ -175,7 +181,7 @@ class _CameraViewState extends State<CameraView> {
     try {
       final imageFile = await _capturePicture();
       if (imageFile != null) {
-        await _navigateToChatbot(imageFile);
+        await _navigateToPlantInfo(imageFile);
       }
     } catch (e) {
       debugPrint('Camera capture error: $e');
@@ -235,7 +241,7 @@ class _CameraViewState extends State<CameraView> {
       
       if (await _validateImage(imageFile)) {
         final savedImage = await _saveImageToTemp(imageFile, picked.path);
-        await _navigateToChatbot(savedImage);
+        await _navigateToPlantInfo(savedImage);
       } else {
         _showErrorSnackBar('Invalid image selected.');
       }
@@ -251,16 +257,37 @@ class _CameraViewState extends State<CameraView> {
     return exists && size > 0;
   }
 
-  Future<void> _navigateToChatbot(File imageFile) async {
+  Future<void> _navigateToPlantInfo(File imageFile) async {
     if (!mounted) return;
-    
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChatbotScreen(imageFile: imageFile),
-      ),
-    );
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await PromptService.handlePrompt("", XFile(imageFile.path));
+      setState(() => _isLoading = false);
+
+      if (response.containsKey("error")) {
+        _showErrorSnackBar(response["error"]);
+        return;
+      }
+
+      // 👇 Convert JSON into PlantInfo model
+      final plant = PlantInfo.fromJson(response["response"]);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PlantInfoScreen(
+            plant: plant, // 👈 REQUIRED NOW
+            imageUrl: response["image_url"] ?? "",
+          ),
+        ),
+      );
+    } catch (e) {
+      _showErrorSnackBar("Failed to fetch plant info: $e");
+      setState(() => _isLoading = false);
+    }
   }
+
 
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
@@ -277,9 +304,27 @@ class _CameraViewState extends State<CameraView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _isInitialized ? _buildCameraView() : _buildLoadingView(),
+      body: Stack(
+        children: [
+          _isInitialized ? _buildCameraView() : _buildLoadingView(),
+
+          // 👇 Overlay when loading
+          if (_isLoading)
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
+
 
   Widget _buildLoadingView() {
     return Container(
@@ -303,20 +348,25 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Widget _buildCameraView() {
-    return GestureDetector(
-      onTapDown: _setFocusPoint,
-      onScaleStart: _onScaleStart,
-      onScaleUpdate: _onScaleUpdate,
-      child: Stack(
-        children: [
-          _buildCameraPreview(),
-          _buildTopAppBar(),
-          _buildCaptureButton(),
-          _buildZoomIndicator(),
-        ],
-      ),
-    );
-  }
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      return GestureDetector(
+        onTapDown: (details) =>
+            _setFocusPoint(details, constraints), // pass constraints
+        onScaleStart: _onScaleStart,
+        onScaleUpdate: _onScaleUpdate,
+        child: Stack(
+          children: [
+            _buildCameraPreview(),
+            _buildTopAppBar(),
+            _buildCaptureButton(),
+            _buildZoomIndicator(),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildCameraPreview() {
     return SizedBox(

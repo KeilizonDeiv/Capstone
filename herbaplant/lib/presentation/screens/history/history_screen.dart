@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:herbaplant/presentation/screens/plant_info/plant_info.dart';
+import 'package:herbaplant/presentation/screens/plant_info/plant_info_screen.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../widgets/history_item_widget.dart';
 import '../../widgets/confirmation_dialog.dart';
+import 'package:herbaplant/services/user_service.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -12,91 +18,49 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final List<Map<String, String>> _history = [
-    {
-      'title': 'Monstera Deliciosa',
-      'subtitle':
-          'A user\'s progressive history into the care and maintenance of this beautiful tropical plant...',
-      'date': 'Today',
-    },
-    {
-      'title': 'Snake Plant (Sansevieria)',
-      'subtitle':
-          'Exploring indoor maintenance routines and optimal growing conditions...',
-      'date': 'Yesterday',
-    },
-    {
-      'title': 'Aloe Vera',
-      'subtitle':
-          'Herbal plant care to harvesting aloe gel for medicinal purposes...',
-      'date': 'Last week',
-    },
-    {
-      'title': 'Fiddle Leaf Fig',
-      'subtitle':
-          'Documenting sunlight and watering cycles for healthy growth...',
-      'date': 'Last month',
-    },
-    {
-      'title': 'Peace Lily',
-      'subtitle':
-          'Tracking bloom patterns and shade preferences for indoor spaces...',
-      'date': '3 weeks ago',
-    },
-    {
-      'title': 'ZZ Plant',
-      'subtitle': 'A tough plant\'s survival log under low light conditions...',
-      'date': '2 days ago',
-    },
-    {
-      'title': 'Spider Plant',
-      'subtitle': 'Repotting experiences and offshoot growth management...',
-      'date': 'Last month',
-    },
-    {
-      'title': 'Jade Plant',
-      'subtitle': 'Succulent propagation and leaf care journal entries...',
-      'date': '2 months ago',
-    },
-    {
-      'title': 'Pothos (Devil\'s Ivy)',
-      'subtitle': 'Trailing vine trimming and rooting notes for propagation...',
-      'date': '3 days ago',
-    },
-    {
-      'title': 'Rubber Plant',
-      'subtitle': 'Tracking glossy foliage and cleaning routine maintenance...',
-      'date': '1 month ago',
-    },
-    {
-      'title': 'Boston Fern',
-      'subtitle': 'Humidity requirements and misting schedule documentation...',
-      'date': '5 days ago',
-    },
-    {
-      'title': 'Philodendron',
-      'subtitle': 'Heart-shaped leaves care and climbing support setup...',
-      'date': '1 week ago',
-    },
-    {
-      'title': 'Calathea',
-      'subtitle': 'Prayer plant movement patterns and humidity needs...',
-      'date': '2 weeks ago',
-    },
-    {
-      'title': 'Dracaena',
-      'subtitle': 'Dragon tree pruning and brown tip prevention methods...',
-      'date': '3 weeks ago',
-    },
-    {
-      'title': 'Succulent Garden',
-      'subtitle': 'Mixed succulent arrangement and watering schedule...',
-      'date': '1 month ago',
-    },
-  ];
-
+  List<Map<String, dynamic>> _history = [];
   final Set<int> _selectedIndexes = {};
   bool _isEditMode = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+  }
+
+  Future<void> _fetchHistory() async {
+    setState(() => _isLoading = true);
+
+    final userHistory = await UserService.getUserHistory();
+    final imageHistory = await UserService.getImageHistory();
+
+    // merge and deduplicate by ID
+    final Map<int, Map<String, dynamic>> unique = {};
+    for (final item in [...userHistory, ...imageHistory]) {
+      final id = item['id'];
+      if (id != null) {
+        unique[id] = item; // overwrites duplicates, keeps only one per id
+      }
+    }
+
+    final combined = unique.values.toList();
+
+    // sort newest first
+    combined.sort((a, b) {
+      final aTime = DateTime.tryParse(a['timestamp']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      final bTime = DateTime.tryParse(b['timestamp']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      return bTime.compareTo(aTime);
+    });
+
+    setState(() {
+      _history = combined;
+      _isLoading = false;
+    });
+  }
+
 
   void _toggleEditMode() {
     setState(() {
@@ -117,46 +81,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  void _deleteSelected() {
-    if (_selectedIndexes.isEmpty) return;
+    void _deleteSelected() async {
+      if (_selectedIndexes.isEmpty) return;
 
-    final selectedCount = _selectedIndexes.length;
-    final itemLabel = selectedCount > 1 ? 'items' : 'item';
+      final selectedItems = _selectedIndexes.map((i) => _history[i]).toList();
+      final ids = selectedItems
+        .map((item) => item['id'])
+        .where((id) => id != null)
+        .cast<int>()
+        .toList();
 
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmationDialog(
-        title: 'Delete Selected History?',
-        message:
-            'Are you sure you want to delete $selectedCount selected $itemLabel?',
-        onConfirm: () {
-          setState(() {
-            final sortedIndexes = _selectedIndexes.toList()
-              ..sort((a, b) => b.compareTo(a));
-            for (final index in sortedIndexes) {
-              if (index >= 0 && index < _history.length) {
-                _history.removeAt(index);
-              }
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => ConfirmationDialog(
+          title: 'Delete Selected History?',
+          message:
+              'Are you sure you want to delete ${ids.length} selected item(s)?',
+          onConfirm: () => Navigator.of(context).pop(true),
+          onCancel: () => Navigator.of(context).pop(false),
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final success = await UserService.deleteHistoryItems(ids);
+
+      if (success) {
+        setState(() {
+          final sortedIndexes = _selectedIndexes.toList()
+            ..sort((a, b) => b.compareTo(a));
+          for (final index in sortedIndexes) {
+            if (index >= 0 && index < _history.length) {
+              _history.removeAt(index);
             }
+          }
+          _selectedIndexes.clear();
+          _isEditMode = false;
+        });
 
-            _selectedIndexes.clear();
-            _isEditMode = false;
-          });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${ids.length} item(s) deleted.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("⚠️ Failed to delete history.")),
+        );
+      }
+    }
 
-          Navigator.of(context).pop();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$selectedCount $itemLabel deleted.'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-        onCancel: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
 
   void _selectAll() {
     setState(() {
@@ -170,18 +143,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
+  String _formatTimestamp(String? timestamp) {
+    if (timestamp == null || timestamp.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(timestamp).toLocal();
+      return DateFormat("MMMM d, yyyy HH:mm").format(dt);
+    } catch (e) {
+      return timestamp; // fallback
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildBody(),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Color(0xFF0C553B),
+      backgroundColor: const Color(0xFF0C553B),
       elevation: 0,
       automaticallyImplyLeading: false,
       titleSpacing: 5,
@@ -263,7 +248,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Column(
       children: [
         Container(height: 1, color: Colors.grey.shade200),
-        if (_history.isNotEmpty && !_isEditMode)
+        if (!_isEditMode)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -299,33 +284,57 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final item = _history[index];
     final isSelected = _selectedIndexes.contains(index);
 
+    final imgUrl = item['img_url']?.toString() ?? '';
+    final responseStr = item['response']?.toString() ?? item['title'] ?? '';
+    final timestamp = item['timestamp']?.toString() ?? item['date'] ?? '';
+
+    // Try detect if it's JSON (plant identification)
+    bool isPlant = false;
+    String titleText = responseStr.split("\n").first;
+    try {
+      final cleaned = responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
+      final decoded = jsonDecode(cleaned);
+      if (decoded is Map && decoded.containsKey("name")) {
+        isPlant = true;
+        titleText = decoded["name"]; // use plant name instead of ```json
+      }
+    } catch (_) {
+      // not JSON → chat
+    }
+
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 10.0, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 1),
       child: Container(
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(6),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-              horizontal: 10, vertical: 4),
-          leading: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.chat_bubble_outline,
-              color: AppColors.primary,
-              size: 18,
-            ),
-          ),
+          leading: isPlant && imgUrl.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(
+                    imgUrl,
+                    width: 38,
+                    height: 38,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image, color: Colors.grey),
+                  ),
+                )
+              : Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.chat_bubble_outline,
+                      color: AppColors.primary, size: 18),
+                ),
           title: Text(
-            item['title'] ?? '',
+            titleText,
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -334,28 +343,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item['subtitle'] ?? '',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey,
-                  height: 1.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                item['date'] ?? '',
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          subtitle: Text(
+            _formatTimestamp(timestamp),
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           trailing: _isEditMode
               ? Checkbox(
@@ -372,6 +367,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
+
 
   Widget _buildEmptyState() {
     return Center(
@@ -398,13 +394,60 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  void _onHistoryItemTap(Map<String, String> item) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Opening: ${item['title']}"),
-        duration: const Duration(seconds: 1),
-        backgroundColor: AppColors.primary,
+  void _onHistoryItemTap(Map<String, dynamic> item) {
+    final responseStr = item['response']?.toString() ?? item['title'] ?? '';
+    final imgUrl = item['img_url']?.toString() ?? '';
+
+    try {
+      // Try parse JSON (plant identification)
+      final cleaned = responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
+      final decoded = jsonDecode(cleaned);
+
+      if (decoded is Map && decoded.containsKey("name")) {
+        // 🚀 This is a plant identification → go to PlantInfoScreen
+        final plant = PlantInfo.fromJson(Map<String, dynamic>.from(decoded));
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PlantInfoScreen(
+              plant: plant,
+              imageUrl: imgUrl,
+            ),
+          ),
+        );
+        return;
+      }
+    } catch (_) {
+      // ignore parse errors
+    }
+
+    // 🚀 Otherwise → treat as chat message
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Chat Prompt"),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(responseStr), // plain text response
+              const SizedBox(height: 10),
+              Text(
+                "Date: ${_formatTimestamp(item['timestamp']?.toString() ?? item['date'] ?? '')}",
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Close"),
+          ),
+        ],
       ),
     );
   }
+
 }

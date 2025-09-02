@@ -5,8 +5,32 @@ import 'package:herbaplant/presentation/screens/history/history_screen.dart';
 import 'package:herbaplant/routes/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _username = "";
+  String _email = "";
+  String? _profileImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDetails();
+  }
+
+  Future<void> _loadUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString("username") ?? "User";
+      _email = prefs.getString("email") ?? "No email";
+      _profileImage = prefs.getString("profile_image");
+    });
+  }
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -85,10 +109,8 @@ class ProfileScreen extends StatelessWidget {
         slivers: [
           SliverAppBar(
             expandedHeight: 280,
-            floating: false,
             pinned: true,
-            elevation: 0,
-            backgroundColor: Color(0xFF0C553B),
+            backgroundColor: const Color(0xFF0C553B),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
               onPressed: () => context.push('/home'),
@@ -101,14 +123,13 @@ class ProfileScreen extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            titleSpacing: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
+                    colors: [Color(0xFF0C553B), Color(0xFF0C553B)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFF0C553B), Color(0xFF0C553B)],
                   ),
                 ),
                 child: Column(
@@ -128,23 +149,24 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 50,
-                        backgroundImage:
-                            AssetImage('assets/image/sample_profile.jpg'),
+                        backgroundImage: _profileImage != null && _profileImage!.isNotEmpty
+                          ? NetworkImage("http://192.168.254.172:5000${_profileImage!}")
+                          : AssetImage('assets/image/sample_profile.jpg') as ImageProvider,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      "Herba People",
-                      style: TextStyle(
+                    Text(
+                      _username,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      "mangkepweng@herba.com",
+                      _email,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 16,
@@ -168,7 +190,7 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         icon: Icons.edit_outlined,
                         label: "Edit Profile",
-                        subtitle: "Update your personal information",
+                        subtitle: "Update your password and profile picture",
                         onTap: () => context.push('/edit-profile'),
                       ),
                       _buildMenuItem(

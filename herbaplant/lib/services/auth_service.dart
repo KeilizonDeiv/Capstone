@@ -14,13 +14,8 @@ const List<String> scopes = <String>[
 ];
 
 class AuthService {
-  static const String baseUrl = "http://192.168.68.106:5000/auth";
-
-  static final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: scopes,
-    serverClientId:
-        "456318535404-76pbrr2ko1ecnv53nv09p0ql92p3g83q.apps.googleusercontent.com",
-  );
+  // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
+  static const String baseUrl = "http://192.168.254.172:5000/auth"; //uncomment for non local
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -112,6 +107,36 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
+  static Future<Map<String, dynamic>> resetPassword(
+    String token, String newPassword, String confirmPassword) async {
+      final url = Uri.parse("$baseUrl/reset-password?token=$token");
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "new_password": newPassword,
+          "confirm_password": confirmPassword,
+        }),
+      );
+
+      return jsonDecode(response.body);
+    }
+
+  //* Google Sign In
+  static Future<Map<String, dynamic>?> loginWithGoogle(String? idToken) async {
+  final url = Uri.parse("$baseUrl/google-login");
+
+  final response = await http.post(url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"id_token": idToken}));
+
+  if (response.statusCode == 400) return jsonDecode(response.body);
+
+  return jsonDecode(response.body);
+}
+
+
   //* Log in as Guest
   static Future<Map<String, dynamic>?> loginAsGuest() async {
     final url = Uri.parse("$baseUrl/guest");
@@ -193,6 +218,43 @@ class AuthService {
     // TODO: Add force logout logic here if email is updated
 
     return true;
+  }
+
+  //! [!] End
+
+  //* Change Password
+    static Future<Map<String, dynamic>> changePassword(
+      String oldPassword, String newPassword) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    final url = Uri.parse("$baseUrl/change-password");
+
+    try {
+      print("➡️ Sending change-password request to $url");
+      print("   Headers: Authorization Bearer $token");
+      print("   Body: old=$oldPassword new=$newPassword");
+
+      final response = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode({
+          "old_password": oldPassword,
+          "new_password": newPassword,
+        }),
+      );
+
+      print("⬅️ Response ${response.statusCode}: ${response.body}");
+
+      return jsonDecode(response.body);
+    } catch (e, stack) {
+      print("❌ changePassword failed: $e");
+      print(stack);
+      return {"error": "Request failed: $e"};
+    }
   }
 
   //* Get user info
