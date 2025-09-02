@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//! Untested Code
 class UserService {
   //static const String baseUrl = "http://127.0.0.1:5000/user"; //uncomment for local
-  static const String baseUrl = "http://192.168.254.172:5000/user";
+  static const String baseUrl = "http://192.168.68.106:5000/user";
   //* Get User History
   static Future<List<Map<String, dynamic>>> getUserHistory() async {
     final prefs = await SharedPreferences.getInstance();
@@ -61,7 +60,7 @@ class UserService {
     }
   }
 
-    //* Delete history
+  //* Delete history
   static Future<bool> deleteHistoryItems(List<int> ids) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
@@ -91,7 +90,8 @@ class UserService {
   }
 
   // Upload profile picture
-  static Future<Map<String, dynamic>> updateProfilePicture(File imageFile) async {
+  static Future<Map<String, dynamic>> updateProfilePicture(
+      File imageFile) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
@@ -100,7 +100,8 @@ class UserService {
     try {
       var request = http.MultipartRequest("POST", url);
       request.headers["Authorization"] = "Bearer $token";
-      request.files.add(await http.MultipartFile.fromPath("image", imageFile.path));
+      request.files
+          .add(await http.MultipartFile.fromPath("image", imageFile.path));
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -110,5 +111,4 @@ class UserService {
       return {"error": "Error uploading image: $e"};
     }
   }
-
 }

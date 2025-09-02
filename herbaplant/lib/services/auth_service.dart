@@ -4,7 +4,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
 
 const List<String> scopes = <String>[
   'email',
@@ -15,7 +14,14 @@ const List<String> scopes = <String>[
 
 class AuthService {
   // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
-  static const String baseUrl = "http://192.168.254.172:5000/auth"; //uncomment for non local
+  static const String baseUrl =
+      "http://192.168.68.106:5000/auth"; //uncomment for non local
+
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: scopes,
+    serverClientId:
+        "456318535404-76pbrr2ko1ecnv53nv09p0ql92p3g83q.apps.googleusercontent.com",
+  );
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -108,34 +114,33 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> resetPassword(
-    String token, String newPassword, String confirmPassword) async {
-      final url = Uri.parse("$baseUrl/reset-password?token=$token");
+      String token, String newPassword, String confirmPassword) async {
+    final url = Uri.parse("$baseUrl/reset-password?token=$token");
 
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "new_password": newPassword,
-          "confirm_password": confirmPassword,
-        }),
-      );
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "new_password": newPassword,
+        "confirm_password": confirmPassword,
+      }),
+    );
 
-      return jsonDecode(response.body);
-    }
+    return jsonDecode(response.body);
+  }
 
   //* Google Sign In
   static Future<Map<String, dynamic>?> loginWithGoogle(String? idToken) async {
-  final url = Uri.parse("$baseUrl/google-login");
+    final url = Uri.parse("$baseUrl/google-login");
 
-  final response = await http.post(url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"id_token": idToken}));
+    final response = await http.post(url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"id_token": idToken}));
 
-  if (response.statusCode == 400) return jsonDecode(response.body);
+    if (response.statusCode == 400) return jsonDecode(response.body);
 
-  return jsonDecode(response.body);
-}
-
+    return jsonDecode(response.body);
+  }
 
   //* Log in as Guest
   static Future<Map<String, dynamic>?> loginAsGuest() async {
@@ -223,7 +228,7 @@ class AuthService {
   //! [!] End
 
   //* Change Password
-    static Future<Map<String, dynamic>> changePassword(
+  static Future<Map<String, dynamic>> changePassword(
       String oldPassword, String newPassword) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");

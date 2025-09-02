@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PromptService {
-  static const String baseUrl = "http://192.168.254.172:5000/prompt"; //uncomment for non local
+  static const String baseUrl = "http://192.168.68.106:5000/prompt"; //uncomment for non local
   // static const String baseUrl = "http://127.0.0.1:5000/prompt"; //uncomment for local
 
   //* Handle gemini queries
