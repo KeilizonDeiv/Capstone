@@ -10,7 +10,6 @@ import '../profile/profile_screen.dart';
 import 'widgets/notification_service.dart';
 import 'package:herbaplant/services/article_service.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -31,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initUser() async {
-    await _getUserData();   // wait for API call & prefs save
+    await _getUserData(); // wait for API call & prefs save
     await _loadUserFromStorage(); // then load into state
   }
 
@@ -77,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String? token = prefs.getString("token");
 
     // final url = Uri.parse("http://127.0.0.1:5000/articles/trending-news"); //uncomment for local 192.168.254.172
-    final url = Uri.parse("http://192.168.254.172:5000/articles/trending-news"); //uncomment for non local
+    final url = Uri.parse(
+        "http://192.168.254.180:5000/articles/trending-news"); //uncomment for non local
     final response = await http.get(
       url,
       headers: {
@@ -127,17 +127,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundwh,
+      backgroundColor: isDark ? Colors.black : AppColors.backgroundwh,
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
         centerTitle: false,
         automaticallyImplyLeading: false,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
         ),
         title: Text(
           "Hi, $userName",
@@ -166,21 +167,29 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const GetStartedSteps(),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+
+              // Section header
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   children: [
-                    Icon(Icons.question_mark_outlined,
+                    const Icon(Icons.question_mark_outlined,
                         color: Color(0xFF0C553B)),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'What\'s New?',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                   ],
                 ),
               ),
+
+              // Trending news cards
               SizedBox(
                 height: 250,
                 child: trendingNews.isEmpty
@@ -198,12 +207,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               width: 250,
                               margin: const EdgeInsets.only(right: 10),
                               decoration: BoxDecoration(
-                                color: Colors.green.shade100,
+                                color: isDark
+                                    ? Colors.grey[900]
+                                    : Colors.green.shade100,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // Image
                                   Expanded(
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
@@ -236,7 +248,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           return Container(
                                             width: 250,
                                             height: 150,
-                                            color: Colors.grey[300],
+                                            color: isDark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[300],
                                             child: const Center(
                                               child: Column(
                                                 mainAxisAlignment:
@@ -249,10 +263,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   Text(
                                                     "Image failed to load",
                                                     style: TextStyle(
-                                                        color: Colors.red,
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                      color: Colors.red,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -263,16 +278,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  Text(
-                                    article["title"] ?? "No Title",
-                                    style: const TextStyle(
-                                        color: Colors.green,
+
+                                  // Title
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      article["title"] ?? "No Title",
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.green,
                                         fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                   const SizedBox(height: 5),
+
+                                  // Description
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8.0),
@@ -280,8 +307,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       article["description"] ??
                                           "No description available",
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.black, fontSize: 12),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black,
+                                        fontSize: 12,
+                                      ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),

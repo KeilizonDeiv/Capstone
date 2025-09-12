@@ -3,7 +3,6 @@ import '../home/home_screen.dart';
 import '../scan/scan_screen.dart';
 import '../history/history_screen.dart'; // ✅ History screen
 import '../chatbot/chatbot_screen.dart';
-import '../../../core/constants/app_colors.dart' as core_colors;
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -27,6 +26,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       extendBody: true,
       body: _screens[_selectedIndex],
@@ -44,7 +45,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ],
         ),
         child: FloatingActionButton(
-          backgroundColor: Color(0xFF0C553B),
+          backgroundColor: const Color(0xFF0C553B), // ✅ brand green
           onPressed: () => _onItemTapped(1),
           shape: const CircleBorder(),
           child: const Icon(Icons.center_focus_strong,
@@ -60,7 +61,7 @@ class _MainNavigationState extends State<MainNavigation> {
         child: BottomAppBar(
           shape: const CircularNotchedRectangle(),
           notchMargin: 8.0,
-          color: Colors.white,
+          color: isDark ? Colors.grey[900] : Colors.white,
           child: SizedBox(
             height: 60,
             child: Row(
@@ -75,11 +76,16 @@ class _MainNavigationState extends State<MainNavigation> {
                           Icons.home,
                           color: _selectedIndex == 0
                               ? const Color(0xFF0C553B)
-                              : Colors.grey,
+                              : (isDark ? Colors.white70 : Colors.grey),
                         ),
-                        const Text(
+                        Text(
                           'Home',
-                          style: TextStyle(fontSize: 12),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _selectedIndex == 0
+                                ? const Color(0xFF0C553B)
+                                : (isDark ? Colors.white70 : Colors.grey),
+                          ),
                         ),
                       ],
                     ),
@@ -102,11 +108,16 @@ class _MainNavigationState extends State<MainNavigation> {
                           Icons.eco,
                           color: _selectedIndex == 2
                               ? const Color(0xFF0C553B)
-                              : Colors.grey,
+                              : (isDark ? Colors.white70 : Colors.grey),
                         ),
-                        const Text(
+                        Text(
                           'Herby',
-                          style: TextStyle(fontSize: 12),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _selectedIndex == 2
+                                ? const Color(0xFF0C553B)
+                                : (isDark ? Colors.white70 : Colors.grey),
+                          ),
                         ),
                       ],
                     ),

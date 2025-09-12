@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppSettings extends ChangeNotifier {
+  static const String themeKey = "darkMode";
+  static const String languageKey = "language";
+
   bool _isDarkMode = false;
   String _language = "English";
 
@@ -14,22 +17,22 @@ class AppSettings extends ChangeNotifier {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool('darkMode') ?? false;
-    _language = prefs.getString('language') ?? "English";
+    _isDarkMode = prefs.getBool(themeKey) ?? false;
+    _language = prefs.getString(languageKey) ?? "English";
     notifyListeners();
   }
 
-  Future<void> toggleDarkMode() async {
-    _isDarkMode = !_isDarkMode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('darkMode', _isDarkMode);
+  Future<void> toggleDarkMode(bool value) async {
+    _isDarkMode = value;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(themeKey, value);
   }
 
   Future<void> changeLanguage(String lang) async {
     _language = lang;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', lang);
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(languageKey, lang);
   }
 }

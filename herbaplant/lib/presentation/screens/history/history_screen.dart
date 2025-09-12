@@ -61,7 +61,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-
   void _toggleEditMode() {
     setState(() {
       _isEditMode = !_isEditMode;
@@ -81,55 +80,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-    void _deleteSelected() async {
-      if (_selectedIndexes.isEmpty) return;
+  void _deleteSelected() async {
+    if (_selectedIndexes.isEmpty) return;
 
-      final selectedItems = _selectedIndexes.map((i) => _history[i]).toList();
-      final ids = selectedItems
+    final selectedItems = _selectedIndexes.map((i) => _history[i]).toList();
+    final ids = selectedItems
         .map((item) => item['id'])
         .where((id) => id != null)
         .cast<int>()
         .toList();
 
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => ConfirmationDialog(
+        title: 'Delete Selected History?',
+        message:
+            'Are you sure you want to delete ${ids.length} selected item(s)?',
+        onConfirm: () => Navigator.of(context).pop(true),
+        onCancel: () => Navigator.of(context).pop(false),
+      ),
+    );
 
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => ConfirmationDialog(
-          title: 'Delete Selected History?',
-          message:
-              'Are you sure you want to delete ${ids.length} selected item(s)?',
-          onConfirm: () => Navigator.of(context).pop(true),
-          onCancel: () => Navigator.of(context).pop(false),
-        ),
-      );
+    if (confirmed != true) return;
 
-      if (confirmed != true) return;
+    final success = await UserService.deleteHistoryItems(ids);
 
-      final success = await UserService.deleteHistoryItems(ids);
-
-      if (success) {
-        setState(() {
-          final sortedIndexes = _selectedIndexes.toList()
-            ..sort((a, b) => b.compareTo(a));
-          for (final index in sortedIndexes) {
-            if (index >= 0 && index < _history.length) {
-              _history.removeAt(index);
-            }
+    if (success) {
+      setState(() {
+        final sortedIndexes = _selectedIndexes.toList()
+          ..sort((a, b) => b.compareTo(a));
+        for (final index in sortedIndexes) {
+          if (index >= 0 && index < _history.length) {
+            _history.removeAt(index);
           }
-          _selectedIndexes.clear();
-          _isEditMode = false;
-        });
+        }
+        _selectedIndexes.clear();
+        _isEditMode = false;
+      });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${ids.length} item(s) deleted.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("⚠️ Failed to delete history.")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${ids.length} item(s) deleted.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("⚠️ Failed to delete history.")),
+      );
     }
-
+  }
 
   void _selectAll() {
     setState(() {
@@ -155,8 +152,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: _buildAppBar(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -208,9 +207,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
               color: Colors.white,
             ),
             onPressed: _selectAll,
-            tooltip: _selectedIndexes.length == _history.length
-                ? 'Deselect All'
-                : 'Select All',
           ),
         ],
         TextButton.icon(
@@ -243,21 +239,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildBody() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_history.isEmpty) return _buildEmptyState();
 
     return Column(
       children: [
-        Container(height: 1, color: Colors.grey.shade200),
+        Container(
+            height: 1, color: isDark ? Colors.grey[800] : Colors.grey.shade200),
         if (!_isEditMode)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            color: Colors.grey.shade50,
+            color: isDark ? Colors.grey[900] : Colors.grey.shade50,
             child: Text(
               '${_history.length} conversation${_history.length > 1 ? 's' : ''}',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: isDark ? Colors.white70 : Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -268,7 +267,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             itemCount: _history.length,
             separatorBuilder: (context, index) => Divider(
               height: 0.5,
-              color: Colors.grey.shade100,
+              color: isDark ? Colors.grey[800] : Colors.grey.shade100,
               indent: 60,
             ),
             itemBuilder: (context, index) => _buildHistoryItem(index),
@@ -279,6 +278,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHistoryItem(int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (index >= _history.length) return const SizedBox.shrink();
 
     final item = _history[index];
@@ -288,25 +289,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final responseStr = item['response']?.toString() ?? item['title'] ?? '';
     final timestamp = item['timestamp']?.toString() ?? item['date'] ?? '';
 
-    // Try detect if it's JSON (plant identification)
     bool isPlant = false;
     String titleText = responseStr.split("\n").first;
     try {
-      final cleaned = responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
+      final cleaned =
+          responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
       final decoded = jsonDecode(cleaned);
       if (decoded is Map && decoded.containsKey("name")) {
         isPlant = true;
-        titleText = decoded["name"]; // use plant name instead of ```json
+        titleText = decoded["name"];
       }
-    } catch (_) {
-      // not JSON → chat
-    }
+    } catch (_) {}
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 1),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : (isDark ? Colors.grey[900] : Colors.white),
           borderRadius: BorderRadius.circular(6),
         ),
         child: ListTile(
@@ -318,8 +319,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     width: 38,
                     height: 38,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image, color: Colors.grey),
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.broken_image,
+                        color: isDark ? Colors.white70 : Colors.grey),
                   ),
                 )
               : Container(
@@ -335,10 +337,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
           title: Text(
             titleText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: isDark ? Colors.white : Colors.black87,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -347,7 +349,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _formatTimestamp(timestamp),
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade600,
+              color: isDark ? Colors.white70 : Colors.grey.shade600,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -359,7 +361,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   activeColor: AppColors.primary,
                 )
               : Icon(Icons.arrow_forward_ios,
-                  size: 15, color: Colors.grey.shade400),
+                  size: 15,
+                  color: isDark ? Colors.white54 : Colors.grey.shade400),
           onTap: _isEditMode
               ? () => _toggleSelection(index)
               : () => _onHistoryItemTap(item),
@@ -368,25 +371,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 64, color: Colors.grey.shade300),
+          Icon(Icons.history,
+              size: 64, color: isDark ? Colors.white30 : Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'No History Yet',
             style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.grey.shade600,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Your conversation history will appear here',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white54 : Colors.grey.shade500,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -400,7 +409,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     try {
       // Try parse JSON (plant identification)
-      final cleaned = responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
+      final cleaned =
+          responseStr.replaceAll(RegExp(r"^```json|```$"), "").trim();
       final decoded = jsonDecode(cleaned);
 
       if (decoded is Map && decoded.containsKey("name")) {
@@ -449,5 +459,4 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
 }

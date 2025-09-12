@@ -15,12 +15,12 @@ const List<String> scopes = <String>[
 class AuthService {
   // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
   static const String baseUrl =
-      "http://192.168.68.106:5000/auth"; //uncomment for non local
+      "http://192.168.254.180:5000/auth"; //uncomment for non local
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: scopes,
     serverClientId:
-        "456318535404-76pbrr2ko1ecnv53nv09p0ql92p3g83q.apps.googleusercontent.com",
+        "246870897993-l33inr0agc8jvt06p0gcbvs0dhqjc402.apps.googleusercontent.com",
   );
 
   //* Login
@@ -49,18 +49,20 @@ class AuthService {
     final url = Uri.parse("$baseUrl/google_login");
 
     try {
+      // Force sign-out so user can re-select an account
       await _googleSignIn.signOut();
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      if (googleUser == null) return null;
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return {"error": "Google sign-in canceled"};
+      }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
       final String? idToken = googleAuth.idToken;
-
       if (idToken == null) {
-        throw Exception("Google returned null idToken");
+        return {"error": "Google returned a null idToken"};
       }
 
       final response = await http.post(
@@ -69,13 +71,21 @@ class AuthService {
         body: jsonEncode({"id_token": idToken}),
       );
 
-      if (response.statusCode == 400) return jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        return {
+          "error":
+              "Backend rejected token (${response.statusCode}): ${response.body}"
+        };
+      }
 
       return jsonDecode(response.body);
-    } catch (e) {
-      throw Exception("Error in google sign in: $e");
+    } catch (e, stack) {
+      print("❌ Google sign-in failed: $e");
+      print(stack);
+      return {"error": "Google sign-in failed: $e"};
     }
-  }
+}
+
 
   //* Register
   static Future<Map<String, dynamic>?> registerUser(
@@ -129,18 +139,6 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
-  //* Google Sign In
-  static Future<Map<String, dynamic>?> loginWithGoogle(String? idToken) async {
-    final url = Uri.parse("$baseUrl/google-login");
-
-    final response = await http.post(url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"id_token": idToken}));
-
-    if (response.statusCode == 400) return jsonDecode(response.body);
-
-    return jsonDecode(response.body);
-  }
 
   //* Log in as Guest
   static Future<Map<String, dynamic>?> loginAsGuest() async {

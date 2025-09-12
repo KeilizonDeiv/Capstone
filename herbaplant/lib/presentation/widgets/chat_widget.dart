@@ -146,7 +146,7 @@ class VoiceMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final alignment =
         isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final bgColor = isUser ? AppColors.primary : Colors.green.shade100;
+    final bgColor = isUser ? AppColors.primary : Color(0xFF004D40);
 
     return Align(
       alignment: alignment,

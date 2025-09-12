@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Only needed if you're using GoRouter
+import 'package:go_router/go_router.dart';
 
 class AboutHerbaPlantScreen extends StatelessWidget {
   const AboutHerbaPlantScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
@@ -34,24 +37,35 @@ class AboutHerbaPlantScreen extends StatelessWidget {
               backgroundImage: AssetImage('assets/image/logo-new.png'),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'HerbaPlant',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Version 1.0.0',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: isDark ? Colors.white70 : Colors.grey),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'HerbaPlant is a plant identification and educational app dedicated to Philippine herbal plants. We aim to empower users with knowledge about the medicinal use, growth, and care of these plants.',
               textAlign: TextAlign.justify,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Developed by HerbaTeam | 2025',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white54 : Colors.grey,
+              ),
             ),
           ],
         ),
