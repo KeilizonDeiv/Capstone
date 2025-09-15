@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
@@ -30,11 +29,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool obscureNewPassword = true;
   bool obscureConfirmPassword = true;
 
-   File? _imageFile;
+  File? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source, imageQuality: 80);
+    final pickedFile =
+        await _picker.pickImage(source: source, imageQuality: 80);
 
     if (pickedFile != null) {
       setState(() {
@@ -71,11 +71,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  // helper inside build()
+  OutlineInputBorder _border(Color color) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: color, width: 1.3),
+      );
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    OutlineInputBorder _inputBorder(Color color) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color, width: 1.2),
+        );
+
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xFF0C553B),
+        backgroundColor: const Color(0xFF0C553B),
         elevation: 1,
         automaticallyImplyLeading: false,
         leading: IconButton(
@@ -96,7 +110,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -104,62 +118,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-
                       // Profile Image
                       Center(
-                          child: Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              CircleAvatar(
-                                radius: 60,
-                                backgroundImage: _imageFile != null
-                                    ? FileImage(_imageFile!)
-                                    : const AssetImage('assets/image/sample_profile.jpg')
-                                        as ImageProvider,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 60,
+                              backgroundImage: _imageFile != null
+                                  ? FileImage(_imageFile!)
+                                  : const AssetImage(
+                                          'assets/image/sample_profile.jpg')
+                                      as ImageProvider,
+                            ),
+                            GestureDetector(
+                              onTap: _showImagePickerOptions,
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: const Color(0xFF0C553B),
+                                child: const Icon(Icons.edit,
+                                    color: Colors.white, size: 18),
                               ),
-                              GestureDetector(
-                                onTap: _showImagePickerOptions,
-                                child: CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: const Color(0xFF0C553B),
-                                  child: const Icon(Icons.edit, color: Colors.white, size: 18),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      const SizedBox(height: 30),
-                      Container(
-                        width: 400,
-                        height: 1,
-                        color: Colors.grey,
                       ),
                       const SizedBox(height: 30),
 
-                      // Email
-                      // CustomTextFormField(
-                      //   controller: emailController,
-                      //   label: 'Email Address',
-                      //   labelStyle: const TextStyle(
-                      //     color: Colors.grey,
-                      //   ),
-                      //   prefixIcon: const Icon(
-                      //     Icons.email_outlined,
-                      //     color: Color(0xFF0C553B),
-                      //   ),
-                      //   keyboardType: TextInputType.emailAddress,
-                      //   validator: (value) => value == null || value.isEmpty
-                      //       ? 'Email is required'
-                      //       : null,
-                      // ),
-                      // const SizedBox(height: 10),
+                      // Divider
+                      Container(
+                        width: 400,
+                        height: 1,
+                        color: isDark ? Colors.grey[800] : Colors.grey,
+                      ),
+                      const SizedBox(height: 30),
 
                       /// Old Password
                       CustomTextFormField(
                         controller: oldPasswordController,
                         label: 'Old Password',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.grey,
                         ),
                         obscureText: obscureOldPassword,
                         prefixIcon: const Icon(Icons.lock_outline,
@@ -169,24 +168,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             obscureOldPassword
                                 ? Icons.visibility
                                 : Icons.visibility_off,
+                            color: isDark ? Colors.white70 : Colors.grey,
                           ),
-                          onPressed: () {
-                            setState(
-                                () => obscureOldPassword = !obscureOldPassword);
-                          },
+                          onPressed: () => setState(
+                              () => obscureOldPassword = !obscureOldPassword),
                         ),
                         validator: (value) => value == null || value.isEmpty
                             ? 'Old password is required'
                             : null,
+                        decoration: InputDecoration(
+                          enabledBorder:
+                              _border(isDark ? Colors.white54 : Colors.grey),
+                          focusedBorder: _border(
+                              isDark ? Colors.white : const Color(0xFF0C553B)),
+                        ),
                       ),
+
                       const SizedBox(height: 10),
 
                       /// New Password
                       CustomTextFormField(
                         controller: newPasswordController,
                         label: 'New Password',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.grey,
                         ),
                         obscureText: obscureNewPassword,
                         prefixIcon: const Icon(Icons.lock_outline,
@@ -196,6 +201,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             obscureNewPassword
                                 ? Icons.visibility
                                 : Icons.visibility_off,
+                            color: isDark ? Colors.white70 : Colors.grey,
                           ),
                           onPressed: () {
                             setState(
@@ -205,6 +211,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         validator: (value) => value == null || value.isEmpty
                             ? 'New password is required'
                             : null,
+                        decoration: InputDecoration(
+                          enabledBorder: _inputBorder(
+                              isDark ? Colors.white54 : Colors.grey),
+                          focusedBorder: _inputBorder(
+                              isDark ? Colors.white : const Color(0xFF0C553B)),
+                        ),
                       ),
                       const SizedBox(height: 10),
 
@@ -212,8 +224,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       CustomTextFormField(
                         controller: confirmPasswordController,
                         label: 'Confirm Password',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.grey,
                         ),
                         obscureText: obscureConfirmPassword,
                         prefixIcon: const Icon(Icons.lock_outline,
@@ -223,6 +235,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             obscureConfirmPassword
                                 ? Icons.visibility
                                 : Icons.visibility_off,
+                            color: isDark ? Colors.white70 : Colors.grey,
                           ),
                           onPressed: () {
                             setState(() => obscureConfirmPassword =
@@ -238,6 +251,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           }
                           return null;
                         },
+                        decoration: InputDecoration(
+                          enabledBorder: _inputBorder(
+                              isDark ? Colors.white54 : Colors.grey),
+                          focusedBorder: _inputBorder(
+                              isDark ? Colors.white : const Color(0xFF0C553B)),
+                        ),
                       ),
                       const SizedBox(height: 30),
                     ],
@@ -268,16 +287,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF0C553B),
+                        backgroundColor: const Color(0xFF0C553B),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
-                        final isChangingPassword = oldPasswordController.text.isNotEmpty ||
-                                                  newPasswordController.text.isNotEmpty ||
-                                                  confirmPasswordController.text.isNotEmpty;
+                        // 🚀 Backend logic stays the same
+                        final isChangingPassword =
+                            oldPasswordController.text.isNotEmpty ||
+                                newPasswordController.text.isNotEmpty ||
+                                confirmPasswordController.text.isNotEmpty;
 
                         if (isChangingPassword) {
                           if (_formKey.currentState!.validate()) {
@@ -285,10 +306,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               context: context,
                               builder: (ctx) => ConfirmationDialog(
                                 title: "Save Changes?",
-                                message: "Are you sure you want to update your password?",
+                                message:
+                                    "Are you sure you want to update your password?",
                                 onConfirm: () async {
                                   Navigator.of(ctx).pop();
-                                  final result = await AuthService.changePassword(
+                                  final result =
+                                      await AuthService.changePassword(
                                     oldPasswordController.text.trim(),
                                     newPasswordController.text.trim(),
                                   );
@@ -299,7 +322,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       builder: (_) => SuccessDialog(
                                         title: "Error",
                                         message: result["error"],
-                                        onConfirm: () => Navigator.of(context).pop(),
+                                        onConfirm: () =>
+                                            Navigator.of(context).pop(),
                                       ),
                                     );
                                   } else {
@@ -307,8 +331,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       context: context,
                                       builder: (_) => SuccessDialog(
                                         title: "Success",
-                                        message: result["message"] ?? "Password updated",
-                                        onConfirm: () => Navigator.of(context).pop(),
+                                        message: result["message"] ??
+                                            "Password updated",
+                                        onConfirm: () =>
+                                            Navigator.of(context).pop(),
                                       ),
                                     );
                                   }
@@ -328,7 +354,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           );
                           if (_imageFile != null) {
-                            final result = await UserService.updateProfilePicture(_imageFile!);
+                            final result =
+                                await UserService.updateProfilePicture(
+                                    _imageFile!);
 
                             if (result["error"] != null) {
                               showDialog(
@@ -342,18 +370,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             } else {
                               // 🔑 Save new profile image path into SharedPreferences
                               if (result["profile_image"] != null) {
-                                final prefs = await SharedPreferences.getInstance();
-                                await prefs.setString("profile_image", result["profile_image"]);
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.setString(
+                                    "profile_image", result["profile_image"]);
                               }
 
                               showDialog(
                                 context: context,
                                 builder: (_) => SuccessDialog(
                                   title: "Success",
-                                  message: result["message"] ?? "Profile picture updated successfully!",
+                                  message: result["message"] ??
+                                      "Profile picture updated successfully!",
                                   onConfirm: () {
                                     Navigator.of(context).pop();
-                                    context.go('/profile'); // reload profile screen
+                                    context.go('/profile'); // reload profile
                                   },
                                 ),
                               );

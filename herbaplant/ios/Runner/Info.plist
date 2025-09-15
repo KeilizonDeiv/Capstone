@@ -5,14 +5,25 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-		<key>CFBundleURLName</key>
-		<string>com.herbaplant.app</string> <!-- use your actual bundle ID -->
-		<key>CFBundleURLSchemes</key>
-		<array>
-			<string>herbaplant</string>
-		</array>
+			<key>CFBundleURLName</key>
+			<string>com.herbaplant.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>herbaplant</string>
+			</array>
+		</dict>
+
+		<!-- Google Sign-In scheme -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.246870897993-oilljckfclfshmro0jvkcjgcps88v5oa</string>
+			</array>
 		</dict>
 	</array>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -41,8 +52,8 @@
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-	<key>NSCameraUsageDescription</key>
-	<string>This app uses the camera to scan plants.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>This app uses the camera to scan plants.</string>
 
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
@@ -55,6 +66,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- Allow Google Sign-In -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>google</string>
+		<string>com.google</string>
+	</array>
+
+	<!-- Add your iOS client ID here -->
+	<key>GIDClientID</key>
+	<string>246870897993-oilljckfclfshmro0jvkcjgcps88v5oa.apps.googleusercontent.com</string>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

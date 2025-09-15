@@ -67,6 +67,7 @@ class _HerbaPlantAppState extends State<HerbaPlantApp> {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
     );
   }
 }

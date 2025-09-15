@@ -4,10 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//! Untested Code
-
 class PromptService {
-  static const String baseUrl = "http://192.168.254.172:5000/prompt"; //uncomment for non local
+  static const String baseUrl = "http://192.168.254.180:5000/prompt"; //uncomment for non local
   // static const String baseUrl = "http://127.0.0.1:5000/prompt"; //uncomment for local
 
   //* Handle gemini queries

@@ -1,13 +1,27 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// TODO: Implement better debugging for exception returns, also maybe use toasts to display errors?
-//! Code encased in warning [!] sign is untested
+
+const List<String> scopes = <String>[
+  'email',
+  'profile',
+  'openid',
+  'https://www.googleapis.com/auth/contacts.readonly',
+];
 
 class AuthService {
   // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
-  static const String baseUrl = "http://192.168.254.172:5000/auth"; //uncomment for non local
+  static const String baseUrl =
+      "http://192.168.254.180:5000/auth"; //uncomment for non local
+
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: scopes,
+    serverClientId:
+        "246870897993-l33inr0agc8jvt06p0gcbvs0dhqjc402.apps.googleusercontent.com",
+  );
 
   //* Login
   static Future<Map<String, dynamic>?> loginUser(
@@ -30,6 +44,49 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
+  //* Google Signin
+  static Future<Map<String, dynamic>?> signInWithGoogle() async {
+    final url = Uri.parse("$baseUrl/google_login");
+
+    try {
+      // Force sign-out so user can re-select an account
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return {"error": "Google sign-in canceled"};
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final String? idToken = googleAuth.idToken;
+      if (idToken == null) {
+        return {"error": "Google returned a null idToken"};
+      }
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"id_token": idToken}),
+      );
+
+      if (response.statusCode != 200) {
+        return {
+          "error":
+              "Backend rejected token (${response.statusCode}): ${response.body}"
+        };
+      }
+
+      return jsonDecode(response.body);
+    } catch (e, stack) {
+      print("❌ Google sign-in failed: $e");
+      print(stack);
+      return {"error": "Google sign-in failed: $e"};
+    }
+}
+
+
   //* Register
   static Future<Map<String, dynamic>?> registerUser(
     String username,
@@ -51,8 +108,6 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
-  //! [!] Start
-
   //* Forgot Password
   static Future<Map<String, dynamic>?> forgotPassword(String email) async {
     final url = Uri.parse("$baseUrl/forgot-password");
@@ -69,33 +124,20 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> resetPassword(
-    String token, String newPassword, String confirmPassword) async {
-      final url = Uri.parse("$baseUrl/reset-password?token=$token");
+      String token, String newPassword, String confirmPassword) async {
+    final url = Uri.parse("$baseUrl/reset-password?token=$token");
 
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "new_password": newPassword,
-          "confirm_password": confirmPassword,
-        }),
-      );
-
-      return jsonDecode(response.body);
-    }
-
-  //* Google Sign In
-  static Future<Map<String, dynamic>?> loginWithGoogle(String? idToken) async {
-  final url = Uri.parse("$baseUrl/google-login");
-
-  final response = await http.post(url,
+    final response = await http.post(
+      url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"id_token": idToken}));
+      body: jsonEncode({
+        "new_password": newPassword,
+        "confirm_password": confirmPassword,
+      }),
+    );
 
-  if (response.statusCode == 400) return jsonDecode(response.body);
-
-  return jsonDecode(response.body);
-}
+    return jsonDecode(response.body);
+  }
 
 
   //* Log in as Guest
@@ -138,8 +180,6 @@ class AuthService {
     }
   }
 
-  //! [!] End
-
   //* Update First time login
   static Future<Map<String, dynamic>> updateFirstTimeLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -158,8 +198,6 @@ class AuthService {
     if (response.statusCode == 400) return jsonDecode(response.body);
     return jsonDecode(response.body);
   }
-
-  //! [!] Start
 
   //* Update User
   static Future<bool> updateUser(String field, String newValue) async {
@@ -188,7 +226,7 @@ class AuthService {
   //! [!] End
 
   //* Change Password
-    static Future<Map<String, dynamic>> changePassword(
+  static Future<Map<String, dynamic>> changePassword(
       String oldPassword, String newPassword) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");

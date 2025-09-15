@@ -46,10 +46,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLogoutConfirmation(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
@@ -62,25 +65,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Icon(Icons.logout, color: Colors.red.shade400, size: 24),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               "Log out?",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           "Are you sure you want to log out of your account?",
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.grey,
+            fontSize: 16,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text("Cancel",
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -89,12 +94,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade400,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
-            child: const Text("Log out", style: TextStyle(color: Colors.white)),
+            child: const Text("Log out",
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -103,8 +110,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: isDark ? Colors.black : Colors.grey.shade50,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -151,9 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundImage: _profileImage != null && _profileImage!.isNotEmpty
-                          ? NetworkImage("http://192.168.254.172:5000${_profileImage!}")
-                          : AssetImage('assets/image/sample_profile.jpg') as ImageProvider,
+                        backgroundImage: _profileImage != null &&
+                                _profileImage!.isNotEmpty
+                            ? NetworkImage(
+                                "http://192.168.254.180:5000${_profileImage!}")
+                            : const AssetImage(
+                                    'assets/image/sample_profile.jpg')
+                                as ImageProvider,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -287,9 +300,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required List<Widget> children,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[900] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -306,10 +321,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(20),
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
           ),
@@ -327,6 +342,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         ListTile(
@@ -340,35 +357,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Icon(
               icon,
-              color: Color(0xFF0C553B),
+              color: const Color(0xFF0C553B),
               size: 24,
             ),
           ),
           title: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
           subtitle: Text(
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: isDark ? Colors.white70 : Colors.grey.shade600,
             ),
           ),
           trailing: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: isDark ? Colors.grey[800] : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.arrow_forward_ios,
               size: 14,
-              color: Colors.grey.shade600,
+              color: isDark ? Colors.white70 : Colors.grey.shade600,
             ),
           ),
           onTap: onTap,
@@ -377,7 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Divider(
             height: 1,
             thickness: 1,
-            color: Colors.grey.shade200,
+            color: isDark ? Colors.grey[800] : Colors.grey.shade200,
             indent: 72,
             endIndent: 20,
           ),

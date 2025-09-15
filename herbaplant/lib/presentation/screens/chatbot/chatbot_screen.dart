@@ -111,7 +111,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         }
       } else {
         setState(() {
-          _messages.add({'role': 'user', 'text': '[Image could not be loaded]'});
+          _messages
+              .add({'role': 'user', 'text': '[Image could not be loaded]'});
           _messages.add({
             'role': 'bot',
             'text': 'Sorry, I couldn’t identify the image you provided.'
@@ -218,14 +219,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Widget _buildBotMessage(String text, String time) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.shade400),
+          color: isDark ? Colors.grey[800] : Colors.white,
+          border: Border.all(
+              color: isDark ? Colors.grey[700]! : Colors.grey.shade400),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -233,12 +237,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           children: [
             Text(
               text,
-              style: const TextStyle(fontSize: 15, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               time,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark ? Colors.white70 : Colors.grey.shade600,
+              ),
             ),
           ],
         ),
@@ -246,15 +256,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
-  Widget _buildDisclaimer() {
+  Widget _buildDisclaimer(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Text(
-        "⚠️ Disclaimer: Herby is not a medical professional. This information is for educational purposes only and should not replace advice from a qualified healthcare provider. If you experience severe symptoms, please seek medical attention immediately.",
+        "⚠️ Disclaimer: Herby is not a medical professional. This information is for educational purposes only...",
         style: TextStyle(
           fontSize: 11,
           fontStyle: FontStyle.italic,
-          color: Colors.grey[600],
+          color: isDark ? Colors.white70 : Colors.grey[600],
           height: 1.3,
         ),
         textAlign: TextAlign.center,
@@ -264,14 +274,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.black : AppColors.background,
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Row(
@@ -291,12 +304,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ),
       ),
       body: Container(
-        color: const Color(0xFFF5F5F5),
+        color: isDark ? Colors.grey[900] : const Color(0xFFF5F5F5),
         child: Column(
           children: [
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
                   return _buildMessage(_messages[index]);
@@ -308,28 +322,29 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: BotMessageBubble(text: "Typing..."),
               ),
-            _buildDisclaimer(),
-            _buildInputField(),
+            _buildDisclaimer(isDark),
+            _buildInputField(isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField() {
+  Widget _buildInputField(bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: Colors.white,
+      color: isDark ? Colors.grey[850] : Colors.white,
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _controller,
               onSubmitted: _sendMessage,
-              decoration: const InputDecoration(
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              decoration: InputDecoration(
                 hintText: 'Ask Herby about Herbal Plants...',
                 hintStyle: TextStyle(
-                  color: Colors.grey,
+                  color: isDark ? Colors.white54 : Colors.grey,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
                 ),
