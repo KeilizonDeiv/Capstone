@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:provider/provider.dart';
 import 'package:herbaplant/services/auth_service.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -12,22 +15,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _sendResetLink() async {
+  void _sendResetLink(AppSettings appSettings) async {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
 
       final response = await AuthService.forgotPassword(email);
 
       if (response == null || response.containsKey("error")) {
-        String msg = response?["error"] ?? "Something went wrong";
+        String msg = response?["error"] ?? appSettings.t("somethingWentWrong");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("⚠️ $msg"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("⚠️ $msg"),
+            backgroundColor: Colors.red,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("📧 Password reset link sent to $email"),
-            backgroundColor: Color(0xFF2D5A3D),
+            content: Text("📧 ${appSettings.t('resetLinkSent')} $email"),
+            backgroundColor: const Color(0xFF2D5A3D),
           ),
         );
         Navigator.pop(context);
@@ -37,10 +43,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appSettings = Provider.of<AppSettings>(context);
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     OutlineInputBorder _border(Color color) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
@@ -58,7 +69,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           color: Colors.white,
         ),
         title: Text(
-          "Forgot Password",
+          t("forgotPasswordTitle"),
           style: TextStyle(
             fontSize: screenHeight * 0.028,
             fontWeight: FontWeight.w600,
@@ -72,13 +83,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF0C553B), Color(0xFF2D5A3D)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               image: DecorationImage(
-                image: AssetImage('assets/image/bgplant.jpg'),
+                image: const AssetImage('assets/image/bgplant.jpg'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.white.withOpacity(0.2),
@@ -96,8 +107,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   height: screenHeight * 0.71,
                   margin: EdgeInsets.only(top: screenHeight * 0.05),
                   padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.06,
-                      vertical: screenHeight * 0.03),
+                    horizontal: screenWidth * 0.06,
+                    vertical: screenHeight * 0.03,
+                  ),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -118,30 +130,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment
-                              .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.lock_reset_rounded,
                               size: screenHeight * 0.06,
-                              color: Color(0xFF2D5A3D),
+                              color: const Color(0xFF2D5A3D),
                             ),
-                            SizedBox(
-                                width: screenWidth * 0.03),
+                            SizedBox(width: screenWidth * 0.03),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Reset Your Password",
+                                    t("resetYourPassword"),
                                     style: TextStyle(
                                       fontSize: screenHeight * 0.025,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF2D5A3D),
+                                      color: const Color(0xFF2D5A3D),
                                     ),
                                   ),
                                   Text(
-                                    "Enter your email to receive a reset link.",
+                                    t("enterEmailToReset"),
                                     style: TextStyle(
                                       color: Colors.black54,
                                       fontSize: screenHeight * 0.018,
@@ -155,10 +165,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         SizedBox(height: screenHeight * 0.025),
                         TextFormField(
                           controller: _emailController,
-                          cursorColor: Color(0xFF2D5A3D),
+                          cursorColor: const Color(0xFF2D5A3D),
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
-                            hintText: 'Email',
+                            hintText: t("email"),
                             hintStyle: TextStyle(
                               color: isDark ? Colors.white70 : Colors.grey,
                             ),
@@ -181,25 +191,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 value.isEmpty ||
                                 !RegExp(r'^[^@]+@[^@]+\.[^@]+')
                                     .hasMatch(value)) {
-                              return "Please enter a valid email";
+                              return t("invalidEmail");
                             }
                             return null;
                           },
                         ),
                         SizedBox(height: screenHeight * 0.025),
                         ElevatedButton(
-                          onPressed: _sendResetLink,
+                          onPressed: () => _sendResetLink(appSettings),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF2D5A3D),
+                            backgroundColor: const Color(0xFF2D5A3D),
                             minimumSize:
                                 Size(double.infinity, screenHeight * 0.065),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(30),
                             ),
                             elevation: 5,
                           ),
                           child: Text(
-                            "Send Reset Link",
+                            t("sendResetLink"),
                             style: TextStyle(
                               fontSize: screenHeight * 0.02,
                               color: Colors.white,

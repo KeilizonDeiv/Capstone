@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/presentation/screens/auth/forgot_password_screen.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 import 'package:herbaplant/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'register_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  bool _obscurePassword = true;  
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -26,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response == null) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Login Failed.")));
+            .showSnackBar(const SnackBar(content: Text("loginFailed")));
       }
 
       if (response!.containsKey("error")) {
@@ -50,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await AuthService.signInWithGoogle();
 
       if (response == null || !response.containsKey("token")) {
-        String msg = response?["error"] ?? "Google login failed";
+        String msg = response?["error"] ?? "googleLoginFailed";
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
@@ -71,6 +73,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     OutlineInputBorder _border(Color color) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
@@ -115,9 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   right: screenWidth * 0.3, // leave space for plant image
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
-                        'Hello..',
+                        t('hello'),
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -125,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Text(
-                        'Please login to continue',
+                        t('pleaseLogin'),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
@@ -165,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Login',
+                              t('login'),
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -182,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: isDark ? Colors.white : Colors.black,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Email',
+                                hintText: t('email'),
                                 hintStyle: TextStyle(
                                   color: isDark ? Colors.white70 : Colors.grey,
                                 ),
@@ -212,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: isDark ? Colors.white : Colors.black,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Password',
+                                hintText: t('password'),
                                 hintStyle: TextStyle(
                                   color: isDark ? Colors.white70 : Colors.grey,
                                 ),
@@ -258,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   );
                                 },
                                 child: Text(
-                                  "Forgot password?",
+                                  t("forgotPassword"),
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white70
@@ -281,8 +285,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     borderRadius: BorderRadius.circular(25),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Login',
+                                child: Text(
+                                  t('login'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -294,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 16),
                             Center(
                               child: Text(
-                                'or login with',
+                                t('orLoginWith'),
                                 style: TextStyle(
                                   color: isDark ? Colors.white70 : Colors.grey,
                                   fontSize: 14,
@@ -327,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      'Continue with Google',
+                                      t('continueWithGoogle'),
                                       style: TextStyle(
                                         color: isDark
                                             ? Colors.white
@@ -347,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Don't have an account? ",
+                                    t("noAccount"),
                                     style: TextStyle(
                                       color:
                                           isDark ? Colors.white70 : Colors.grey,
@@ -362,8 +366,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 const RegisterScreen()),
                                       );
                                     },
-                                    child: const Text(
-                                      'Sign up',
+                                    child: Text(
+                                      t('signUp'),
                                       style: TextStyle(
                                         color: Color(0xFF2D5A3D),
                                         fontWeight: FontWeight.w600,

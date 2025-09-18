@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:provider/provider.dart';
 
 class GetStartedSteps extends StatelessWidget {
   const GetStartedSteps({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String step1 = 'Learn how to take a clear photo for identification.';
-    String step2 = 'Understand how to analyze the results effectively.';
-    String step3 = 'Discover additional information about herbs.';
-    String step4 = 'Save your identification history for future reference.';
-    String step5 = 'Explore expert tips on herbal plant usage.';
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
           child: Row(
             children: [
-              Icon(Icons.touch_app, color: Color(0xFF0C553B)),
-              SizedBox(width: 8),
+              const Icon(Icons.touch_app, color: Color(0xFF0C553B)),
+              const SizedBox(width: 8),
               Text(
-                'Get Started',
-                style: TextStyle(
+                t('getStarted'), // ✅ now translatable
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -32,7 +31,6 @@ class GetStartedSteps extends StatelessWidget {
             ],
           ),
         ),
-
         SizedBox(
           height: 250,
           child: ListView.builder(
@@ -40,28 +38,23 @@ class GetStartedSteps extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             itemCount: 5,
             itemBuilder: (context, index) {
-              String description = '';
+              String descriptionKey = 'step${index + 1}'; // ✅ use key
               IconData icon = Icons.check_circle;
 
               switch (index) {
                 case 0:
-                  description = step1;
                   icon = Icons.photo_camera;
                   break;
                 case 1:
-                  description = step2;
                   icon = Icons.psychology_alt;
                   break;
                 case 2:
-                  description = step3;
                   icon = Icons.search;
                   break;
                 case 3:
-                  description = step4;
                   icon = Icons.history;
                   break;
                 case 4:
-                  description = step5;
                   icon = Icons.explore;
                   break;
               }
@@ -105,8 +98,7 @@ class GetStartedSteps extends StatelessWidget {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 6.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -120,7 +112,7 @@ class GetStartedSteps extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      description,
+                                      t(descriptionKey), // ✅ translated text
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 12,

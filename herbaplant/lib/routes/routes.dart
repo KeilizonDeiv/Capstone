@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:herbaplant/presentation/screens/auth/reset_password_screen.dart';
+import 'package:herbaplant/presentation/screens/home/home_screen.dart';
 import '../presentation/screens/splash/splash_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
@@ -29,7 +30,7 @@ GoRouter createRouter() {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => LoginScreen(), // we’ll update next
+        builder: (context, state) => HomeScreen(), // we’ll update next
       ),
       GoRoute(
         path: '/reset-password',

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 import 'package:herbaplant/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -52,6 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -80,32 +85,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Stack(
               children: [
                 // Floating Create Account Text
-                Positioned(
-                  top: screenHeight * 0.15,
-                  left: 24,
-                  right: screenWidth * 0.3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Please sign up to continue',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Positioned(
+                //   top: screenHeight * 0.15,
+                //   left: 24,
+                //   right: screenWidth * 0.3,
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Text(
+                //         t('createAccount'),
+                //         style: TextStyle(
+                //           fontSize: 32,
+                //           fontWeight: FontWeight.bold,
+                //           color: Colors.white,
+                //         ),
+                //       ),
+                //       Text(
+                //         t('pleaseSignUp'),
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           color: Colors.white70,
+                //           height: 1.2,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
 
                 // Form container
                 Positioned(
@@ -122,23 +127,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         topRight: Radius.circular(30),
                       ),
                     ),
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(22.0),
                     child: Form(
                       key: _formKey,
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Sign Up',
+                           Text(
+                              t('registerTitle'),
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF2D5A3D),
                               ),
                             ),
-                            const SizedBox(height: 30),
+                            Text(
+                              t('pleaseSignUp'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D5A3D),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                             _buildInputField(
                               controller: _emailController,
                               hintText: 'Email',
@@ -150,7 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 10),
                             _buildInputField(
                               controller: _usernameController,
                               hintText: 'Username',
@@ -160,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ? "Please enter a username"
                                       : null,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 10),
                             _buildInputField(
                               controller: _passwordController,
                               hintText: 'Password',
@@ -177,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ? "Please enter a password"
                                       : null,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 10),
                             _buildInputField(
                               controller: _confirmPasswordController,
                               hintText: 'Confirm Password',
@@ -213,8 +225,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   elevation: 0,
                                 ),
-                                child: const Text(
-                                  'Sign up',
+                                child: Text(
+                                  t('Sign up'),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 17,
@@ -275,6 +287,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     return TextFormField(
       controller: controller,
+      cursorColor: Color(0xFF2D5A3D),
       obscureText: isPassword && !isPasswordVisible,
       validator: validator,
       decoration: InputDecoration(
