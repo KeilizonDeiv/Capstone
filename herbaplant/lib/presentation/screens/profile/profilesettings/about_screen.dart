@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:provider/provider.dart';
+import 'package:herbaplant/providers/app_settings.dart';
 
 class AboutHerbaPlantScreen extends StatelessWidget {
   const AboutHerbaPlantScreen({super.key});
@@ -8,6 +11,7 @@ class AboutHerbaPlantScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final appSettings = Provider.of<AppSettings>(context);
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -19,9 +23,9 @@ class AboutHerbaPlantScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          "About us",
-          style: TextStyle(
+        title: Text(
+          appSettings.t('aboutUs'),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
             fontSize: 20,
@@ -47,12 +51,12 @@ class AboutHerbaPlantScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Version 1.0.0',
+              '${appSettings.t('version')} 1.0.0',
               style: TextStyle(color: isDark ? Colors.white70 : Colors.grey),
             ),
             const SizedBox(height: 20),
             Text(
-              'HerbaPlant is a plant identification and educational app dedicated to Philippine herbal plants. We aim to empower users with knowledge about the medicinal use, growth, and care of these plants.',
+              appSettings.t('aboutDescription'),
               textAlign: TextAlign.justify,
               style: TextStyle(
                 color: isDark ? Colors.white70 : Colors.black87,
@@ -61,7 +65,7 @@ class AboutHerbaPlantScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             Text(
-              'Developed by HerbaTeam | 2025',
+              '${appSettings.t('developedBy')} HerbaTeam | 2025',
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? Colors.white54 : Colors.grey,

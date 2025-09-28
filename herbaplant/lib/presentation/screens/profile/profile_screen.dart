@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
 import 'package:herbaplant/presentation/screens/history/history_screen.dart';
-import 'package:herbaplant/routes/routes.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -36,17 +37,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    if (navigatorKey.currentContext == null) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      GoRouter.of(navigatorKey.currentContext!).go('/login');
-    });
+    // Navigate safely back to login
+    if (!mounted) return;
+    context.go('/login');
   }
 
   void _showLogoutConfirmation(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = Provider.of<AppSettings>(context, listen: false).t;
 
     showDialog(
       context: context,
@@ -66,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              "Log out?",
+              t("logOutQuestion"), // 🔹 add in translations
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white : Colors.black,
@@ -75,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         content: Text(
-          "Are you sure you want to log out of your account?",
+          t("logOutConfirmation"), // 🔹 add in translations
           style: TextStyle(
             color: isDark ? Colors.white70 : Colors.grey,
             fontSize: 16,
@@ -84,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text("Cancel",
+            child: Text(t("cancel"),
                 style: TextStyle(color: isDark ? Colors.white70 : Colors.grey)),
           ),
           ElevatedButton(
@@ -94,14 +92,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade400,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
-            child: const Text("Log out",
-                style: TextStyle(color: Colors.white)),
+            child: Text(t("logOut"),
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -111,6 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.grey.shade50,
@@ -122,11 +121,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: const Color(0xFF0C553B),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-              onPressed: () => context.push('/home'),
+              onPressed: () => context.pop(), // ✅ go back instead of push
             ),
-            title: const Text(
-              'Profile',
-              style: TextStyle(
+            title: Text(
+              t('profile'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -197,20 +196,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionCard(
-                    title: "General Settings",
+                    title: t("generalSettings"),
                     children: [
                       _buildMenuItem(
                         context,
                         icon: Icons.edit_outlined,
-                        label: "Edit Profile",
-                        subtitle: "Update your password and profile picture",
+                        label: t("editProfile"),
+                        subtitle: t("updateProfile"),
                         onTap: () => context.push('/edit-profile'),
                       ),
                       _buildMenuItem(
                         context,
                         icon: Icons.history_outlined,
-                        label: "Prompt History",
-                        subtitle: "View your recent activities",
+                        label: t("promptHistory"),
+                        subtitle: t("viewRecentActivities"),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -223,8 +222,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildMenuItem(
                         context,
                         icon: Icons.settings_outlined,
-                        label: "Settings",
-                        subtitle: "App preferences and configurations",
+                        label: t("settings"),
+                        subtitle: t("appPreferences"),
                         onTap: () => context.push('/settings'),
                         showDivider: false,
                       ),
@@ -232,20 +231,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 20),
                   _buildSectionCard(
-                    title: "Support & Info",
+                    title: t("supportInfo"),
                     children: [
                       _buildMenuItem(
                         context,
                         icon: Icons.help_outline,
-                        label: "Help & Support",
-                        subtitle: "Get help and contact support",
+                        label: t("helpSupport"),
+                        subtitle: t("getHelp"),
                         onTap: () => context.push('/help'),
                       ),
                       _buildMenuItem(
                         context,
                         icon: Icons.info_outline,
-                        label: "About Us",
-                        subtitle: "Learn more about our app",
+                        label: t("aboutUs"),
+                        subtitle: t("learnMore"),
                         onTap: () => context.push('/about'),
                         showDivider: false,
                       ),
@@ -254,16 +253,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 30),
                   Container(
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade400,
@@ -276,9 +265,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       icon: const Icon(Icons.logout_outlined,
                           color: Colors.white, size: 24),
-                      label: const Text(
-                        "Log out",
-                        style: TextStyle(
+                      label: Text(
+                        t("logOut"),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),

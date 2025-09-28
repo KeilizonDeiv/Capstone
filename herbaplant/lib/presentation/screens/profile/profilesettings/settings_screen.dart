@@ -3,122 +3,24 @@ import 'package:herbaplant/presentation/screens/profile/profilesettings/app_sett
 import 'package:herbaplant/presentation/screens/profile/profilesettings/privacy_policy_screen.dart';
 import 'package:provider/provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final appSettings = Provider.of<AppSettings>(context);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0C553B), // ✅ brand color
-        elevation: 0,
-        titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          "Settings",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
+  Widget _buildLanguageTile(String language, bool isSelected, bool isDark, VoidCallback onTap) {
+    return ListTile(
+      leading: const Icon(Icons.language, color: Color(0xFF2D5A3D), size: 20),
+      title: Text(
+        language,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
         ),
       ),
-      body: Column(
-        children: [
-          // ✅ Dark Mode toggle
-          SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            activeColor: const Color(0xFF0C553B),
-            title: Text(
-              "Dark Mode",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            subtitle: Text(
-              appSettings.isDarkMode ? "Currently: Dark" : "Currently: Light",
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white70 : Colors.grey,
-              ),
-            ),
-            value: appSettings.isDarkMode,
-            onChanged: (value) => appSettings.toggleDarkMode(value),
-            secondary: const Icon(Icons.dark_mode_outlined, color: Color(0xFF0C553B)),
-          ),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: isDark ? Colors.grey[800] : Colors.grey[300],
-          ),
-
-          // ✅ Language
-          _buildSettingsTile(
-            icon: Icons.language_outlined,
-            title: 'Language',
-            subtitle: "Current: ${appSettings.language}",
-            onTap: () async {
-              final result = await showDialog<String>(
-                context: context,
-                builder: (ctx) => SimpleDialog(
-                  title: const Text("Choose Language"),
-                  backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-                  titleTextStyle: TextStyle(
-                    color: isDark ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  children: [
-                    SimpleDialogOption(
-                      onPressed: () => Navigator.pop(ctx, 'English'),
-                      child: Text(
-                        "English",
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                      ),
-                    ),
-                    SimpleDialogOption(
-                      onPressed: () => Navigator.pop(ctx, 'Filipino'),
-                      child: Text(
-                        "Filipino",
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-              if (result != null) appSettings.changeLanguage(result);
-            },
-            isDark: isDark,
-          ),
-
-          // ✅ Privacy Policy
-          _buildSettingsTile(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            subtitle: 'View our privacy policy',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
-              );
-            },
-            isDark: isDark,
-          ),
-        ],
-      ),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Color(0xFF2D5A3D), size: 20)
+          : null,
+      onTap: onTap,
     );
   }
 
@@ -154,8 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-          trailing: Icon(Icons.chevron_right,
-              color: isDark ? Colors.white70 : Colors.grey),
+          trailing: Icon(Icons.chevron_right, color: isDark ? Colors.white70 : Colors.grey),
           onTap: onTap,
         ),
         Divider(
@@ -164,6 +65,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: isDark ? Colors.grey[800] : Colors.grey[300],
         ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = settings.t;
+
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0C553B),
+        elevation: 0,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          t('settings'),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            activeColor: const Color(0xFF0C553B),
+            title: Text(
+              t('darkMode'),
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            subtitle: Text(
+              settings.isDarkMode ? t('currentlyDark') : t('currentlyLight'),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white70 : Colors.grey,
+              ),
+            ),
+            value: settings.isDarkMode,
+            onChanged: (value) => settings.toggleDarkMode(value),
+            secondary: const Icon(Icons.dark_mode_outlined, color: Color(0xFF0C553B)),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: isDark ? Colors.grey[800] : Colors.grey[300],
+          ),
+
+          _buildSettingsTile(
+            icon: Icons.language_outlined,
+            title: t('language'),
+            subtitle: "${t('current')}: ${settings.language}",
+            isDark: isDark,
+            onTap: () async {
+              final result = await showDialog<String>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+                  title: Text(
+                    t('chooseLanguage'),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLanguageTile(
+                        'English',
+                        settings.language == 'English',
+                        isDark,
+                        () => Navigator.of(ctx).pop('English'),
+                      ),
+                      Divider(color: isDark ? Colors.white24 : Colors.grey[300]),
+                      _buildLanguageTile(
+                        'Filipino',
+                        settings.language == 'Filipino',
+                        isDark,
+                        () => Navigator.of(ctx).pop('Filipino'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              
+              if (result != null) {
+                settings.changeLanguage(result);
+              }
+            },
+          ),
+
+          _buildSettingsTile(
+            icon: Icons.privacy_tip_outlined,
+            title: t('privacyPolicy'),
+            subtitle: t('viewPrivacyPolicy'),
+            isDark: isDark,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

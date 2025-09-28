@@ -5,8 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 import 'package:provider/provider.dart';
 import 'routes/routes.dart'; 
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,15 +58,27 @@ class _HerbaPlantAppState extends State<HerbaPlantApp> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<AppSettings>(context);
-
-    return MaterialApp.router(
-      routerConfig: _router,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-
+    return Consumer<AppSettings>(
+      builder: (context, settings, child) {
+        return MaterialApp.router(
+          routerConfig: _router,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          // CRITICAL: Add these localization properties
+          locale: settings.locale,
+          supportedLocales: const [
+            Locale('en', 'US'), // English
+            Locale('fil', 'PH'), // Filipino
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        );
+      },
     );
   }
 }

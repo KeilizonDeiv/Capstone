@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:herbaplant/presentation/screens/plant_info/plant_info.dart';
 import 'package:herbaplant/presentation/screens/plant_info/plant_info_screen.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../widgets/history_item_widget.dart';
@@ -90,12 +92,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         .cast<int>()
         .toList();
 
+    final appSettings = Provider.of<AppSettings>(context, listen: false);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => ConfirmationDialog(
-        title: 'Delete Selected History?',
-        message:
-            'Are you sure you want to delete ${ids.length} selected item(s)?',
+        title: appSettings.t('deleteSelectedHistory'),
+        message: appSettings.t('deleteConfirmation').replaceFirst('{count}', ids.length.toString()),
         onConfirm: () => Navigator.of(context).pop(true),
         onCancel: () => Navigator.of(context).pop(false),
       ),
@@ -119,11 +121,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${ids.length} item(s) deleted.')),
+        SnackBar(content: Text(appSettings.t('deleteSuccess').replaceFirst('{count}', ids.length.toString()))),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("⚠️ Failed to delete history.")),
+        SnackBar(content: Text(appSettings.t('deleteFailed'))),
       );
     }
   }
@@ -153,17 +155,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appSettings = Provider.of<AppSettings>(context);
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(appSettings),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _buildBody(),
+          : _buildBody(appSettings),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(AppSettings appSettings) {
     return AppBar(
       backgroundColor: const Color(0xFF0C553B),
       elevation: 0,
@@ -176,9 +179,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(width: 4),
-          const Text(
-            "History",
-            style: TextStyle(
+          Text(
+            appSettings.t('history'),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
               fontSize: 20,
@@ -187,7 +190,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           if (_isEditMode) ...[
             const Spacer(),
             Text(
-              '${_selectedIndexes.length} selected',
+              appSettings.t('selectedCount').replaceFirst('{count}', _selectedIndexes.length.toString()),
               style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
@@ -221,8 +224,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           label: Text(
             _isEditMode && _selectedIndexes.isNotEmpty
-                ? "Delete (${_selectedIndexes.length})"
-                : (_isEditMode ? "Done" : "Edit"),
+                ? "${appSettings.t('delete')} (${_selectedIndexes.length})"
+                : (_isEditMode ? appSettings.t('done') : appSettings.t('edit')),
             style: TextStyle(
               color: _isEditMode && _selectedIndexes.isNotEmpty
                   ? Colors.red
@@ -238,10 +241,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(AppSettings appSettings) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (_history.isEmpty) return _buildEmptyState();
+    if (_history.isEmpty) return _buildEmptyState(appSettings);
 
     return Column(
       children: [
@@ -253,7 +256,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             color: isDark ? Colors.grey[900] : Colors.grey.shade50,
             child: Text(
-              '${_history.length} conversation${_history.length > 1 ? 's' : ''}',
+              appSettings.t('conversations').replaceFirst('{count}', _history.length.toString()),
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? Colors.white70 : Colors.grey.shade600,
@@ -371,7 +374,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppSettings appSettings) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
@@ -382,7 +385,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               size: 64, color: isDark ? Colors.white30 : Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
-            'No History Yet',
+            appSettings.t('noHistory'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -391,7 +394,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Your conversation history will appear here',
+            appSettings.t('yourHistoryAppearsHere'),
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white54 : Colors.grey.shade500,
@@ -404,6 +407,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   void _onHistoryItemTap(Map<String, dynamic> item) {
+    final appSettings = Provider.of<AppSettings>(context, listen: false);
     final responseStr = item['response']?.toString() ?? item['title'] ?? '';
     final imgUrl = item['img_url']?.toString() ?? '';
 
@@ -436,7 +440,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Chat Prompt"),
+        title: Text(appSettings.t('chatPrompt')),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,7 +448,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Text(responseStr), // plain text response
               const SizedBox(height: 10),
               Text(
-                "Date: ${_formatTimestamp(item['timestamp']?.toString() ?? item['date'] ?? '')}",
+                "${appSettings.t('date')}: ${_formatTimestamp(item['timestamp']?.toString() ?? item['date'] ?? '')}",
                 style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],
@@ -453,7 +457,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Close"),
+            child: Text(appSettings.t('close')),
           ),
         ],
       ),

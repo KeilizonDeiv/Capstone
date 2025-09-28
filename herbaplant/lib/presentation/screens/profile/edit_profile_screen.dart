@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:herbaplant/core/constants/app_colors.dart';
+import 'package:herbaplant/presentation/screens/profile/profilesettings/app_settings.dart';
 import 'package:herbaplant/presentation/widgets/custom_text_form_field.dart';
 import 'package:herbaplant/presentation/widgets/success_dialog.dart';
 import 'package:herbaplant/services/auth_service.dart';
 import 'package:herbaplant/services/user_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,6 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _showImagePickerOptions() {
+    final t = Provider.of<AppSettings>(context, listen: false).t;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -51,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a Photo'),
+              title: Text(t('takePhoto') ?? 'Take a Photo'),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickImage(ImageSource.camera);
@@ -59,7 +62,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo),
-              title: const Text('Choose from Gallery'),
+              title: Text(t('chooseFromGallery') ?? 'Choose from Gallery'),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickImage(ImageSource.gallery);
@@ -71,7 +74,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // helper inside build()
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: color, width: 1.3),
@@ -80,6 +82,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final settings = Provider.of<AppSettings>(context);
+    final t = settings.t;
 
     OutlineInputBorder _inputBorder(Color color) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -97,9 +102,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: () => context.go('/profile'),
         ),
         centerTitle: false,
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(
+        title: Text(
+          t("editProfileTitle"),
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -156,7 +161,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       /// Old Password
                       CustomTextFormField(
                         controller: oldPasswordController,
-                        label: 'Old Password',
+                        label: t("oldPassword"),
                         labelStyle: TextStyle(
                           color: isDark ? Colors.white70 : Colors.grey,
                         ),
@@ -174,7 +179,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               () => obscureOldPassword = !obscureOldPassword),
                         ),
                         validator: (value) => value == null || value.isEmpty
-                            ? 'Old password is required'
+                            ? t('oldPasswordRequired')
                             : null,
                         decoration: InputDecoration(
                           enabledBorder:
@@ -189,7 +194,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       /// New Password
                       CustomTextFormField(
                         controller: newPasswordController,
-                        label: 'New Password',
+                        label: t("newPassword"),
                         labelStyle: TextStyle(
                           color: isDark ? Colors.white70 : Colors.grey,
                         ),
@@ -208,9 +213,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 () => obscureNewPassword = !obscureNewPassword);
                           },
                         ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'New password is required'
-                            : null,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return t('newPasswordRequired');
+                          }
+                          if (value.length < 6) {
+                            return t('passwordTooShort');
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           enabledBorder: _inputBorder(
                               isDark ? Colors.white54 : Colors.grey),
@@ -223,7 +234,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       /// Confirm Password
                       CustomTextFormField(
                         controller: confirmPasswordController,
-                        label: 'Confirm Password',
+                        label: t("confirmPassword"),
                         labelStyle: TextStyle(
                           color: isDark ? Colors.white70 : Colors.grey,
                         ),
@@ -244,10 +255,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Confirm password is required';
+                            return t('confirmPasswordRequired');
                           }
                           if (value != newPasswordController.text) {
-                            return 'Passwords do not match';
+                            return t('passwordsDoNotMatch');
                           }
                           return null;
                         },
@@ -279,8 +290,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Cancel',
-                          style: TextStyle(color: Color(0xFF0C553B))),
+                      child: Text(
+                        t("cancel"),
+                        style: const TextStyle(color: Color(0xFF0C553B)),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -294,7 +307,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
-                        // 🚀 Backend logic stays the same
                         final isChangingPassword =
                             oldPasswordController.text.isNotEmpty ||
                                 newPasswordController.text.isNotEmpty ||
@@ -305,9 +317,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             showDialog(
                               context: context,
                               builder: (ctx) => ConfirmationDialog(
-                                title: "Save Changes?",
-                                message:
-                                    "Are you sure you want to update your password?",
+                                title: t("saveChangesQuestion"),
+                                message: t("updatePasswordConfirm"),
                                 onConfirm: () async {
                                   Navigator.of(ctx).pop();
                                   final result =
@@ -320,7 +331,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     showDialog(
                                       context: context,
                                       builder: (_) => SuccessDialog(
-                                        title: "Error",
+                                        title: t("errorTitle") ?? "Error",
                                         message: result["error"],
                                         onConfirm: () =>
                                             Navigator.of(context).pop(),
@@ -330,9 +341,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     showDialog(
                                       context: context,
                                       builder: (_) => SuccessDialog(
-                                        title: "Success",
+                                        title: t("successTitle") ?? "Success",
                                         message: result["message"] ??
-                                            "Password updated",
+                                            t("passwordUpdated"),
                                         onConfirm: () =>
                                             Navigator.of(context).pop(),
                                       ),
@@ -344,12 +355,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             );
                           }
                         } else {
-                          // 🚀 Just save image (no password required)
                           showDialog(
                             context: context,
                             builder: (_) => SuccessDialog(
-                              title: "Success",
-                              message: "Profile picture updated successfully!",
+                              title: t("successTitle") ?? "Success",
+                              message: t("profilePicUpdated"),
                               onConfirm: () => Navigator.of(context).pop(),
                             ),
                           );
@@ -362,13 +372,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               showDialog(
                                 context: context,
                                 builder: (_) => SuccessDialog(
-                                  title: "Error",
+                                  title: t("errorTitle") ?? "Error",
                                   message: result["error"],
-                                  onConfirm: () => Navigator.of(context).pop(),
+                                  onConfirm: () =>
+                                      Navigator.of(context).pop(),
                                 ),
                               );
                             } else {
-                              // 🔑 Save new profile image path into SharedPreferences
                               if (result["profile_image"] != null) {
                                 final prefs =
                                     await SharedPreferences.getInstance();
@@ -379,12 +389,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               showDialog(
                                 context: context,
                                 builder: (_) => SuccessDialog(
-                                  title: "Success",
+                                  title: t("successTitle") ?? "Success",
                                   message: result["message"] ??
-                                      "Profile picture updated successfully!",
+                                      t("profilePicUpdated"),
                                   onConfirm: () {
                                     Navigator.of(context).pop();
-                                    context.go('/profile'); // reload profile
+                                    context.go('/profile');
                                   },
                                 ),
                               );
@@ -392,7 +402,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           }
                         }
                       },
-                      child: const Text("Save"),
+                      child: Text(t("save")),
                     ),
                   ),
                 ],
