@@ -195,19 +195,34 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<File?> _capturePicture() async {
-    await _controller!.setFocusMode(FocusMode.auto);
-    await Future.delayed(_focusDelay);
-    
-    final XFile xfile = await _controller!.takePicture();
-    final File imageFile = File(xfile.path);
-    
-    if (await _validateImageWithRetry(imageFile)) {
-      return await _saveImageToTemp(imageFile, xfile.path);
-    } else {
-      _showErrorSnackBar('Captured image is not valid. Please try again.');
-      return null;
-    }
+  await _controller!.setFocusMode(FocusMode.auto);
+  await Future.delayed(_focusDelay);
+
+  final XFile xfile = await _controller!.takePicture();
+  final File imageFile = File(xfile.path);
+
+  // Check file is valid
+  final size = await imageFile.length();
+  debugPrint("Captured file: ${xfile.path}, size: $size");
+
+  if (size > 0) {
+    // Option 1: just return the file directly
+    return imageFile;
+
+    // Option 2 (safer): copy using bytes
+    // final bytes = await imageFile.readAsBytes();
+    // final tempDir = await getTemporaryDirectory();
+    // final savedPath = path.join(tempDir.path, path.basename(xfile.path));
+    // final savedFile = await File(savedPath).writeAsBytes(bytes);
+    // debugPrint("Saved file: $savedPath, size: ${await savedFile.length()}");
+    // return savedFile;
   }
+
+  _showErrorSnackBar("Captured image is empty. Please try again.");
+  return null;
+}
+
+
 
   Future<bool> _validateImageWithRetry(File imageFile) async {
     for (int i = 0; i < _maxRetryAttempts; i++) {
@@ -262,22 +277,28 @@ class _CameraViewState extends State<CameraView> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await PromptService.handlePrompt("", XFile(imageFile.path));
+      final response = await PromptService.handlePrompt("", imageFile);
       setState(() => _isLoading = false);
 
       if (response.containsKey("error")) {
-        _showErrorSnackBar(response["error"]);
+        // 👇 Show backend error in snackbar
+        final errorMsg = response["error"].toString();
+
+        if (errorMsg.contains("503")) {
+          _showErrorSnackBar("The model is overloaded. Please try again later.");
+        } else {
+          _showErrorSnackBar(errorMsg);
+        }
         return;
       }
 
-      // 👇 Convert JSON into PlantInfo model
       final plant = PlantInfo.fromJson(response["response"]);
 
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => PlantInfoScreen(
-            plant: plant, // 👈 REQUIRED NOW
+            plant: plant,
             imageUrl: response["image_url"] ?? "",
           ),
         ),
@@ -286,7 +307,7 @@ class _CameraViewState extends State<CameraView> {
       _showErrorSnackBar("Failed to fetch plant info: $e");
       setState(() => _isLoading = false);
     }
-  }
+}
 
 
   void _showErrorSnackBar(String message) {

@@ -121,6 +121,7 @@ class AppSettings extends ChangeNotifier {
       'confirmPasswordRequired': 'Confirm password is required',
       'passwordsDoNotMatch': 'Passwords do not match',
       'passwordTooShort': 'Password must be at least 6 characters',
+      'successTitle': 'Success',
 
       // Prompt History
       'history': 'History',
@@ -152,6 +153,7 @@ class AppSettings extends ChangeNotifier {
 
       // About us
       'version': 'Version',
+      'ourMission': 'Our Mission',
       'aboutDescription':
           'HerbaPlant is a plant identification and educational app dedicated to Philippine herbal plants. We aim to empower users with knowledge about the medicinal use, growth, and care of these plants.',
       'developedBy': 'Developed by',
@@ -258,6 +260,7 @@ class AppSettings extends ChangeNotifier {
       'confirmPasswordRequired': 'Kinakailangan kumpirmahin ang password',
       'passwordsDoNotMatch': 'Hindi tugma ang mga password',
       'passwordTooShort': 'Ang password ay dapat hindi bababa sa 6 na karakter',
+      'successTitle': 'Tagumpay',
 
       // Prompt History
       'history': 'Kasaysayan',
@@ -292,6 +295,7 @@ class AppSettings extends ChangeNotifier {
 
       // About Us
       'version': 'Bersyon',
+      'ourMission': 'Ang Aming Misyon',
       'aboutDescription':
           'Ang HerbaPlant ay isang app para sa pagkilala at edukasyon ng mga halamang gamot sa Pilipinas. Layunin naming bigyan ng kaalaman ang mga user tungkol sa gamot, paglaki, at pangangalaga ng mga halamang ito.',
       'developedBy': 'Binuo ng',

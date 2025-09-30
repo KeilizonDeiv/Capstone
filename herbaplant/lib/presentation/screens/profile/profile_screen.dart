@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: const Color(0xFF0C553B),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-              onPressed: () => context.pop(), // ✅ go back instead of push
+              onPressed: () => context.push('/home'), // ✅ go back instead of push
             ),
             title: Text(
               t('profile'),
@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundImage: _profileImage != null &&
                                 _profileImage!.isNotEmpty
                             ? NetworkImage(
-                                "http://192.168.254.180:5000${_profileImage!}")
+                                "https://herbaplant-backend-2-0-1t87.onrender.com${_profileImage!}")
                             : const AssetImage(
                                     'assets/image/sample_profile.jpg')
                                 as ImageProvider,
