@@ -30,7 +30,7 @@ GoRouter createRouter() {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => HomeScreen(), // we’ll update next
+        builder: (context, state) => LoginScreen(), // we’ll update next
       ),
       GoRoute(
         path: '/reset-password',

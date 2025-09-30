@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PromptService {
-  static const String baseUrl = "http://192.168.254.180:5000/prompt"; //uncomment for non local
-  // static const String baseUrl = "http://127.0.0.1:5000/prompt"; //uncomment for local
+  static const String baseUrl = "https://herbaplant-backend-2-0-1t87.onrender.com/prompt";
 
-  //* Handle gemini queries
+  /// Handles prompt + optional image upload
   static Future<Map<String, dynamic>> handlePrompt(
-      String prompt, XFile? imageFile) async {
+      String prompt, dynamic imageInput) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
@@ -20,16 +20,31 @@ class PromptService {
     request.headers['Authorization'] = 'Bearer $token';
     request.fields['prompt'] = prompt;
 
-    if (imageFile != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'image',
-        imageFile.path,
-      ));
+    // Normalize input to a File
+    File? file;
+    if (imageInput is XFile) {
+      file = File(imageInput.path);
+    } else if (imageInput is File) {
+      file = imageInput;
+    }
+
+    // Only add file if it exists and has bytes
+    if (file != null && await file.exists()) {
+      final bytes = await file.readAsBytes();
+      if (bytes.isNotEmpty) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'image',
+          bytes,
+          filename: path.basename(file.path),
+        ));
+      } else {
+        return {"error": "Selected file is empty or invalid"};
+      }
     }
 
     try {
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode >= 400) {
         return {
@@ -39,10 +54,11 @@ class PromptService {
 
       return jsonDecode(responseBody);
     } catch (e) {
-      return {"error": "Error in handlePrompt"};
+      return {"error": "Error in handlePrompt: $e"};
     }
   }
 
+  /// Chat-only prompt, no image
   static Future<Map<String, dynamic>> chatPrompt(String prompt) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
@@ -64,6 +80,4 @@ class PromptService {
 
     return jsonDecode(response.body);
   }
-
-
 }

@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
   //static const String baseUrl = "http://127.0.0.1:5000/user"; //uncomment for local
-  static const String baseUrl = "http://192.168.254.180:5000/user";
+  static const String baseUrl = "https://herbaplant-backend-2-0-1t87.onrender.com/user";
   //* Get User History
   static Future<List<Map<String, dynamic>>> getUserHistory() async {
     final prefs = await SharedPreferences.getInstance();
