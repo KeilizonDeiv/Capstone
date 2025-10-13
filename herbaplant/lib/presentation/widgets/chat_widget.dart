@@ -89,7 +89,7 @@ class ImageMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final alignment = isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final borderColor = isUser ? AppColors.primary : Colors.green;
+    final borderColor = isUser ? AppColors.primary : Color(0xFF0C553B);
 
     final file = File(imagePath);
 
@@ -146,7 +146,7 @@ class VoiceMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final alignment =
         isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final bgColor = isUser ? AppColors.primary : Colors.green.shade100;
+    final bgColor = isUser ? AppColors.primary : Color(0xFF004D40);
 
     return Align(
       alignment: alignment,

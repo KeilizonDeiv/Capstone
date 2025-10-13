@@ -1,58 +1,111 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import 'plant_info.dart';
 
 class PlantInfoScreen extends StatelessWidget {
-  const PlantInfoScreen({super.key});
+  final PlantInfo plant;
+  final String imageUrl;
+
+  const PlantInfoScreen({
+    super.key,
+    required this.plant,
+    required this.imageUrl,
+  });
+
+  Widget _buildSection(String title, List<String> items) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ...items.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text("• $e",
+                  style: const TextStyle(fontSize: 14, height: 1.4)),
+            )),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Plant Information"),
+        backgroundColor: const Color(0xFF0C553B),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,
+              color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          plant.name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset('assets/plants/rosemary.jpg'),
-            ),
+            if (imageUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image,
+                    size: 120,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
             const SizedBox(height: 16),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "🌿 Rosemary",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+
+            Text(
+              plant.scientificName,
+              style: const TextStyle(
+                fontStyle: FontStyle.italic,
+                fontSize: 16,
+                color: Colors.grey,
               ),
             ),
             const SizedBox(height: 12),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Botanical Name: Rosmarinus officinalis",
-                style: TextStyle(fontSize: 14, color: AppColors.textLight),
-              ),
+
+            Text(
+              plant.description,
+              style: const TextStyle(fontSize: 15, height: 1.5),
             ),
             const Divider(height: 32),
-            buildInfoSection("Uses", "Rosemary is used to treat muscle pain, improve memory, boost the immune and circulatory system, and promote hair growth."),
-            buildInfoSection("Benefits", "Rich in antioxidants, improves digestion, enhances memory and concentration."),
-            buildInfoSection("Where to Find", "Commonly found in gardens, pots, and local herbal farms."),
+
+            _buildSection("Uses", plant.uses),
+            _buildSection("Health Benefits", plant.benefits),
+            _buildSection("Fun Facts", plant.funFacts),
+
+            if (plant.whereToFind.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Where to Find",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(plant.whereToFind,
+                      style: const TextStyle(fontSize: 14, height: 1.4)),
+                ],
+              ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget buildInfoSection(String title, String body) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Text(body, style: const TextStyle(fontSize: 14)),
-        const SizedBox(height: 16),
-      ],
     );
   }
 }

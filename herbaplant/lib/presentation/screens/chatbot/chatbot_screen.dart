@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:herbaplant/services/prompt_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../widgets/chat_widget.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,6 +26,56 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _handleInitialImage();
   }
 
+  /// 🔧 Formatter: Convert backend response (JSON or String) into clean text
+  String _formatBotResponse(dynamic raw) {
+    try {
+      if (raw is String) {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) return _formatPlantInfo(decoded);
+        return raw;
+      } else if (raw is Map) {
+        return _formatPlantInfo(raw);
+      }
+    } catch (_) {
+      return raw?.toString() ?? "No response from server";
+    }
+    return raw?.toString() ?? "No response from server";
+  }
+
+  String _formatPlantInfo(Map data) {
+    final buffer = StringBuffer();
+
+    if (data.containsKey("name")) {
+      buffer.writeln("🌿 Name: ${data['name']}");
+    }
+    if (data.containsKey("scientific_name")) {
+      buffer.writeln("🔬 Scientific name: ${data['scientific_name']}");
+    }
+    if (data.containsKey("description")) {
+      buffer.writeln("📝 ${data['description']}");
+    }
+    if (data.containsKey("benefits")) {
+      final benefits = (data['benefits'] is List)
+          ? (data['benefits'] as List).join(", ")
+          : data['benefits'];
+      buffer.writeln("💚 Benefits: $benefits");
+    }
+    if (data.containsKey("uses")) {
+      final uses = (data['uses'] is List)
+          ? (data['uses'] as List).join(", ")
+          : data['uses'];
+      buffer.writeln("✨ Uses: $uses");
+    }
+    if (data.containsKey("where_to_find")) {
+      buffer.writeln("📍 Where to find: ${data['where_to_find']}");
+    }
+    if (data.containsKey("fun_facts")) {
+      buffer.writeln("🎉 Fun fact: ${data['fun_facts']}");
+    }
+
+    return buffer.toString().trim();
+  }
+
   Future<void> _handleInitialImage() async {
     final file = widget.imageFile;
     if (file != null) {
@@ -33,31 +85,37 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
       if (isValid) {
         setState(() {
-          _messages.add({
-            'role': 'user',
-            'imagePath': file.path,
-          });
+          _messages.add({'role': 'user', 'imagePath': file.path});
           _isTyping = true;
         });
 
-        await Future.delayed(const Duration(seconds: 2));
+        try {
+          final response =
+              await PromptService.handlePrompt("", XFile(file.path));
 
-        setState(() {
-          _messages.add({
-            'role': 'bot',
-            'text': _getBotInfoFromImage(file),
+          if (response.containsKey("error")) {
+            _showError(response["error"].toString());
+          }
+
+          final botResponse = _formatBotResponse(response["response"]);
+
+          setState(() {
+            _messages.add({'role': 'bot', 'text': botResponse});
+            _isTyping = false;
           });
-          _isTyping = false;
-        });
+        } catch (e) {
+          setState(() {
+            _messages.add({'role': 'bot', 'text': "An error occurred: $e"});
+            _isTyping = false;
+          });
+        }
       } else {
         setState(() {
-          _messages.add({
-            'role': 'user',
-            'text': '[Image could not be loaded]',
-          });
+          _messages
+              .add({'role': 'user', 'text': '[Image could not be loaded]'});
           _messages.add({
             'role': 'bot',
-            'text': 'Sorry, I couldn’t identify the image you provided.',
+            'text': 'Sorry, I couldn’t identify the image you provided.'
           });
         });
 
@@ -68,11 +126,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  String _getBotInfoFromImage(File image) {
-    return "This appears to be a sample herbal plant. Here's some basic information...";
-  }
-
-  void _sendMessage(String message) {
+  void _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
     setState(() {
@@ -81,15 +135,70 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _isTyping = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final response = await PromptService.chatPrompt(message);
+
+      if (response.containsKey("error")) {
+        _showError(response["error"].toString());
+      }
+
+      final botResponse = _formatBotResponse(response["response"]);
+
       setState(() {
-        _messages.add({
-          'role': 'bot',
-          'text': 'This is a bot reply to: "$message"',
-        });
+        _messages.add({'role': 'bot', 'text': botResponse});
         _isTyping = false;
       });
+    } catch (e) {
+      setState(() {
+        _messages.add({'role': 'bot', 'text': "❌ Error: $e"});
+        _isTyping = false;
+      });
+    }
+  }
+
+  void _sendImage(XFile image) async {
+    setState(() {
+      _messages.add({'role': 'user', 'imagePath': image.path});
+      _isTyping = true;
     });
+
+    try {
+      final response = await PromptService.handlePrompt("", image);
+
+      if (response.containsKey("error")) {
+        _showError(response["error"].toString());
+      }
+
+      final botResponse = _formatBotResponse(response["response"]);
+
+      setState(() {
+        _messages.add({'role': 'bot', 'text': botResponse});
+        _isTyping = false;
+      });
+    } catch (e) {
+      setState(() {
+        _messages.add({'role': 'bot', 'text': "An error occurred: $e"});
+        _isTyping = false;
+      });
+    }
+  }
+
+  void _showError(String errorMessage) {
+    String userFriendlyMessage;
+    if (errorMessage.contains("500")) {
+      userFriendlyMessage =
+          "The server is currently unavailable. Please try again later.";
+    } else if (errorMessage.contains("timeout")) {
+      userFriendlyMessage =
+          "The connection timed out. Please check your internet and try again.";
+    } else {
+      userFriendlyMessage =
+          "Oops! Something went wrong. Please try again in a moment.";
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("⚠️ $userFriendlyMessage")),
+    );
   }
 
   Widget _buildMessage(Map<String, String> message) {
@@ -102,20 +211,25 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       );
     } else if (message['role'] == 'user') {
       return UserMessageBubble(text: message['text']!, time: timestamp);
-    } else {
+    } else if (message['role'] == 'bot') {
       return _buildBotMessage(message['text']!, timestamp);
+    } else {
+      return const SizedBox.shrink();
     }
   }
 
   Widget _buildBotMessage(String text, String time) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.shade400),
+          color: isDark ? Colors.grey[800] : Colors.white,
+          border: Border.all(
+              color: isDark ? Colors.grey[700]! : Colors.grey.shade400),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -123,9 +237,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           children: [
             Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: Colors.black87,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 4),
@@ -133,7 +247,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               time,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade600,
+                color: isDark ? Colors.white70 : Colors.grey.shade600,
               ),
             ),
           ],
@@ -142,10 +256,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
+  Widget _buildDisclaimer(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Text(
+        "⚠️ Disclaimer: Herby is not a medical professional. This information is for educational purposes only...",
+        style: TextStyle(
+          fontSize: 11,
+          fontStyle: FontStyle.italic,
+          color: isDark ? Colors.white70 : Colors.grey[600],
+          height: 1.3,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? Colors.black : AppColors.background,
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C553B),
         elevation: 0,
@@ -172,7 +304,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ),
       ),
       body: Container(
-        color: const Color(0xFFF5F5F5),
+        color: isDark ? Colors.grey[900] : const Color(0xFFF5F5F5),
         child: Column(
           children: [
             Expanded(
@@ -190,26 +322,32 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: BotMessageBubble(text: "Typing..."),
               ),
-            _buildInputField(),
+            _buildDisclaimer(isDark),
+            _buildInputField(isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField() {
+  Widget _buildInputField(bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: Colors.white,
+      color: isDark ? Colors.grey[850] : Colors.white,
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _controller,
               onSubmitted: _sendMessage,
-              decoration: const InputDecoration(
-                hintText: 'Type your message...',
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                hintText: 'Ask Herby about Herbal Plants...',
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white54 : Colors.grey,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
                 border: InputBorder.none,
               ),
             ),
@@ -221,13 +359,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               final XFile? image =
                   await picker.pickImage(source: ImageSource.gallery);
               if (image != null) {
-                // example: you can send the image path as a message or handle it differently
-                setState(() {
-                  _messages.add({
-                    'role': 'user',
-                    'text': '📷 Sent an image: ${image.path}',
-                  });
-                });
+                _sendImage(image);
               }
             },
           ),
