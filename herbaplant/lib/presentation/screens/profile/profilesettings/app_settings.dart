@@ -90,7 +90,7 @@ class AppSettings extends ChangeNotifier {
       'generalSettings': 'General Settings',
       'editProfile': 'Edit Profile',
       'updateProfile': 'Update your password and profile picture',
-      'promptHistory': 'Prompt History',
+      'promptHistory': 'History',
       'viewRecentActivities': 'View your recent activities',
       'settings': 'Settings',
       'appPreferences': 'App preferences and configurations',

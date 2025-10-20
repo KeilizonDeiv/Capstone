@@ -4,8 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  //static const String baseUrl = "http://127.0.0.1:5000/user"; //uncomment for local
-  static const String baseUrl = "https://herbaplant-backend-2-0-1t87.onrender.com/user";
+  static const String baseUrl = 
+  "https://herbaplant-backend-2-0-1t87.onrender.com/user";
+  //"http://192.168.254.196:5000/user"; //local testing
+
   //* Get User History
   static Future<List<Map<String, dynamic>>> getUserHistory() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,6 +34,34 @@ class UserService {
       ];
     }
   }
+
+  //* Get chat / generated image history
+    static Future<List<Map<String, dynamic>>> getChatHistory() async {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("token");
+
+      // Use the /prompt/get-chat-history endpoint
+      final url = Uri.parse(
+        //"http://192.168.254.196:5000/prompt/get-chat-history"
+        "https://herbaplant-backend-2-0-1t87.onrender.com/prompt/get-chat-history"
+        );
+
+      try {
+        final response = await http.get(url, headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        });
+
+        if (response.statusCode == 400) return [{}];
+        List<dynamic> data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data);
+      } catch (e) {
+        return [
+          {"error": "Error in getChatHistory: $e"}
+        ];
+      }
+    }
+
 
   //* Get image history
   static Future<List<Map<String, dynamic>>> getImageHistory() async {

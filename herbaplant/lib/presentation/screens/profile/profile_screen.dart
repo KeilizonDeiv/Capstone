@@ -162,7 +162,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundImage: _profileImage != null &&
                                 _profileImage!.isNotEmpty
                             ? NetworkImage(
-                                "https://herbaplant-backend-2-0-1t87.onrender.com${_profileImage!}")
+                                 "https://herbaplant-backend-2-0-1t87.onrender.com${_profileImage!}"
+                                //"http://192.168.254.196:5000${_profileImage!}"
+                                )
                             : const AssetImage(
                                     'assets/image/sample_profile.jpg')
                                 as ImageProvider,

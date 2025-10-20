@@ -136,7 +136,7 @@ class AboutHerbaPlantScreen extends StatelessWidget {
                           position: 'Project Manager & Lead Developer',
                         ),
                         _TeamMember(
-                          name: 'Keilizon-Deiv Leones & Jaspher Tania',
+                          name: 'Keilizon-Deiv Leones',
                           position: 'UI/UX Designer & Frontend Developer',
                         ),
                         _TeamMember(
