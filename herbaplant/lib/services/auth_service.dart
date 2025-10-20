@@ -13,9 +13,9 @@ const List<String> scopes = <String>[
 ];
 
 class AuthService {
-  // static const String baseUrl = "http://127.0.0.1:5000/auth"; //uncomment for local
   static const String baseUrl =
       "https://herbaplant-backend-2-0-1t87.onrender.com/auth"; //uncomment for non local
+      //"http://192.168.254.196:5000/auth"; //local testing
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: scopes,

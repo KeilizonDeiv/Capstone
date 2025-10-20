@@ -89,7 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String? token = prefs.getString("token");
 
     final url = Uri.parse(
-        "https://herbaplant-backend-2-0-1t87.onrender.com/articles/trending-news");
+         "https://herbaplant-backend-2-0-1t87.onrender.com/articles/trending-news");
+        //"http://192.168.254.196:5000/articles/trending-news"); //local testing
     final response = await http.get(
       url,
       headers: {

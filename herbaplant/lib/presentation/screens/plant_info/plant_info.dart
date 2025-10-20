@@ -18,9 +18,42 @@ class PlantInfo {
   });
 
   factory PlantInfo.fromJson(Map<String, dynamic> json) {
+    // Normalize all text fields to lowercase strings for comparison
+    String normalize(dynamic value) =>
+        (value ?? '').toString().trim().toLowerCase();
+
+    final name = normalize(json["name"]);
+    final sciName = normalize(json["scientific_name"]);
+    final desc = normalize(json["description"]);
+
+    // Check if detection failed or returned "N/A", "Unknown", etc.
+    final isNotDetected = name.isEmpty ||
+        sciName.isEmpty ||
+        desc.isEmpty ||
+        name == "n/a" ||
+        sciName == "n/a" ||
+        desc == "n/a" ||
+        name == "unknown" ||
+        sciName == "unknown" ||
+        desc == "unknown";
+
+    if (isNotDetected) {
+      return PlantInfo(
+        name: "We couldn't detect a valid herbal plant.",
+        scientificName: "",
+        description:
+            "Please recapture and make sure to capture an image of a herbal plant.",
+        uses: [],
+        benefits: [],
+        funFacts: [],
+        whereToFind: "",
+      );
+    }
+
+    // Normal valid result
     return PlantInfo(
-      name: json["name"] ?? "Unknown",
-      scientificName: json["scientific_name"] ?? "N/A",
+      name: json["name"] ?? "",
+      scientificName: json["scientific_name"] ?? "",
       description: json["description"] ?? "",
       uses: List<String>.from(json["uses"] ?? []),
       benefits: List<String>.from(json["benefits"] ?? []),
@@ -28,4 +61,6 @@ class PlantInfo {
       whereToFind: json["where_to_find"] ?? "",
     );
   }
+
+
 }
